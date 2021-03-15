@@ -16,7 +16,7 @@ public class Identity implements Parcelable {
     protected final String givenname;
     protected final byte[] sig;
     protected final String fingerprint;
-    protected final boolean hasPrivateKey;
+    protected boolean hasPrivateKey;
 
     protected Identity(
             Map<String, byte[]> map, 
@@ -138,5 +138,9 @@ public class Identity implements Parcelable {
     
     public boolean hasPrivateKey() {
         return hasPrivateKey;
+    }
+
+    protected void setHasPrivateKey(boolean key) {
+        this.hasPrivateKey = key;
     }
 }
