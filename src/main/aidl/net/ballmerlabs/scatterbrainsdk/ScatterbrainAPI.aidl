@@ -33,6 +33,8 @@ interface ScatterbrainAPI {
 
     void deauthorizeApp(in String identity, in String packagename);
 
+    String[] getAppPermissions(in String identity);
+
     boolean isDiscovering();
 
     boolean isPassive();

@@ -16,13 +16,22 @@ public class Identity implements Parcelable {
     protected final String givenname;
     protected final byte[] sig;
     protected final String fingerprint;
+    protected boolean hasPrivateKey;
 
-    protected Identity(Map<String, byte[]> map, byte[] pub, String name, byte[] sig, String fingerprint) {
+    protected Identity(
+            Map<String, byte[]> map, 
+            byte[] pub, 
+            String name, 
+            byte[] sig, 
+            String fingerprint, 
+            boolean hasPrivateKey
+    ) {
         this.mPubKeymap = map;
         this.mScatterbrainPubKey = pub;
         this.givenname = name;
         this.sig = sig;
         this.fingerprint = fingerprint;
+        this.hasPrivateKey = hasPrivateKey;
     }
 
     @FunctionalInterface
@@ -73,6 +82,7 @@ public class Identity implements Parcelable {
         sig = new byte[in.readInt()];
         in.readByteArray(sig);
         fingerprint = in.readString();
+        hasPrivateKey = in.readBoolean();
     }
 
     public static final Creator<Identity> CREATOR = new Creator<Identity>() {
@@ -103,6 +113,7 @@ public class Identity implements Parcelable {
         parcel.writeInt(sig.length);
         parcel.writeByteArray(sig);
         parcel.writeString(fingerprint);
+        parcel.writeBoolean(hasPrivateKey);
     }
 
     public Map<String, byte[]> getmPubKeymap() {
@@ -123,5 +134,13 @@ public class Identity implements Parcelable {
 
     public String getFingerprint() {
         return fingerprint;
+    }
+    
+    public boolean hasPrivateKey() {
+        return hasPrivateKey;
+    }
+
+    protected void setHasPrivateKey(boolean key) {
+        this.hasPrivateKey = key;
     }
 }
