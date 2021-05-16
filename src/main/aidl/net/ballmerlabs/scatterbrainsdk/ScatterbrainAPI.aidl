@@ -17,6 +17,8 @@ interface ScatterbrainAPI {
 
     void sendAndSignMessage(in ScatterMessage message, in String identity);
 
+    byte[] signDataDetached(in byte[] data, in String identity);
+
     void sendMessages(in List<ScatterMessage> messages);
 
     void startDiscovery();
