@@ -1,7 +1,11 @@
 package net.ballmerlabs.scatterbrainsdk;
 
+import android.content.Context;
 import android.provider.DocumentsContract;
 import android.webkit.MimeTypeMap;
+
+import net.ballmerlabs.scatterbrainsdk.internal.DaggerSdkComponent;
+import net.ballmerlabs.scatterbrainsdk.internal.SdkComponent;
 
 import java.io.File;
 
@@ -10,6 +14,21 @@ public class ScatterbrainApi {
     public static final String EXTRA_TRANSACTION_RESULT = "transaction_result";
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
     public static final String KEYSTORE_ID = "scatterbrainkeystore";
+    private final Context applicationContext;
+    private final SdkComponent sdkComponent;
+
+    public ScatterbrainApi(Context applicationContext) {
+        this.applicationContext = applicationContext;
+        sdkComponent = DaggerSdkComponent.builder().applicationContext(applicationContext).build();
+    }
+
+    public BinderWrapper getBinderWrapper() {
+        return sdkComponent.sdk();
+    }
+
+    public ScatterbrainBroadcastReceiver getBroadcastReceiver() {
+        return sdkComponent.broadcastReceiver();
+    }
 
     public static String getMimeType(File file) {
         if (file.isDirectory()) {

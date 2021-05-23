@@ -1,4 +1,4 @@
-package net.ballmerlabs.scatterbrainsdk
+package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import kotlinx.coroutines.runBlocking
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,8 +15,8 @@ import javax.inject.Singleton
 class ScatterbrainBroadcastReceiverImpl @Inject constructor(
         val context: Context
 ) : BroadcastReceiver(), ScatterbrainBroadcastReceiver {
-    val intentFilter = IntentFilter(BROADCASST_MESSAGE)
-    val callbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
+    private val intentFilter = IntentFilter(BROADCASST_MESSAGE)
+    private val callbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
 
     override fun onReceive(ctx: Context, intent: Intent) {
         val handshakeResult = intent.getParcelableExtra<HandshakeResult>(ScatterbrainApi.EXTRA_TRANSACTION_RESULT)!!

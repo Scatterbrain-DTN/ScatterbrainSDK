@@ -1,5 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk
 
+import net.ballmerlabs.scatterbrainsdk.internal.HandshakeResult
+
 interface ScatterbrainBroadcastReceiver {
     fun register()
     fun unregister()

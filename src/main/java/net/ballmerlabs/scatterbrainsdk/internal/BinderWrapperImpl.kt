@@ -1,4 +1,4 @@
-package net.ballmerlabs.scatterbrainsdk
+package net.ballmerlabs.scatterbrainsdk.internal
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
@@ -29,7 +30,7 @@ import kotlin.coroutines.suspendCoroutine
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
         private val broadcastReceiver: ScatterbrainBroadcastReceiverImpl
-) : BinderWrapper {
+) : BinderWrapper  {
 
     private var binder: ScatterbrainAPI? = null
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()

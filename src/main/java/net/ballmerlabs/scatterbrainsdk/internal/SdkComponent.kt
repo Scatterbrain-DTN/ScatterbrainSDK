@@ -1,4 +1,4 @@
-package net.ballmerlabs.scatterbrainsdk
+package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.content.Context
 import dagger.Binds
@@ -6,6 +6,8 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import net.ballmerlabs.scatterbrainsdk.BinderWrapper
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import javax.inject.Singleton
 
 @Singleton
