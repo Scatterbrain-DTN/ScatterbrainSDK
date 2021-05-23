@@ -14,7 +14,6 @@ public class ScatterbrainApi {
     public static int MAX_BODY_SIZE = 1024*1024*4;
     public static final String EXTRA_TRANSACTION_RESULT = "transaction_result";
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
-    public static final String KEYSTORE_ID = "scatterbrainkeystore";
     private final SdkComponent sdkComponent;
 
     public ScatterbrainApi(Context applicationContext) {
