@@ -93,6 +93,11 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+    override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
+        bindService()
+        return binder!!.signDataDetached(data, identity.fingerprint)
+    }
+
     override suspend fun unbindService(): Boolean = suspendCoroutine { ret ->
         try {
             if (binder != null) {
