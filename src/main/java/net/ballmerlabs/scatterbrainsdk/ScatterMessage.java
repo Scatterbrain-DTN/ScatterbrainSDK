@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ScatterMessage implements Parcelable {
     protected final byte[] body;
-    protected final byte[] fromFingerprint;
-    protected final byte[] toFingerprint;
+    protected final String fromFingerprint;
+    protected final String toFingerprint;
     protected final AtomicReference<byte[]> sig = new AtomicReference<>();
     protected final String fingerprint;
     protected final String application;
@@ -36,10 +36,8 @@ public class ScatterMessage implements Parcelable {
     protected ScatterMessage(Parcel in) {
         body = new byte[validateBody(in.readInt())];
         in.readByteArray(body);
-        fromFingerprint = new byte[validateBody(in.readInt())];
-        in.readByteArray(fromFingerprint);
-        toFingerprint = new byte[validateBody(in.readInt())];
-        in.readByteArray(toFingerprint);
+        this.fromFingerprint = in.readString();
+        this.toFingerprint = in.readString();
         this.application = in.readString();
         this.extension = in.readString();
         this.mime = in.readString();
@@ -87,10 +85,8 @@ public class ScatterMessage implements Parcelable {
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(body.length);
         parcel.writeByteArray(body);
-        parcel.writeInt(fromFingerprint.length);
-        parcel.writeByteArray(fromFingerprint);
-        parcel.writeInt(toFingerprint.length);
-        parcel.writeByteArray(toFingerprint);
+        parcel.writeString(fromFingerprint);
+        parcel.writeString(toFingerprint);
         parcel.writeString(application);
         parcel.writeString(extension);
         parcel.writeString(mime);
@@ -104,11 +100,11 @@ public class ScatterMessage implements Parcelable {
         return body;
     }
 
-    public byte[] getFromFingerprint() {
+    public String getFromFingerprint() {
         return fromFingerprint;
     }
 
-    public byte[] getToFingerprint() {
+    public String getToFingerprint() {
         return toFingerprint;
     }
 
@@ -150,8 +146,8 @@ public class ScatterMessage implements Parcelable {
 
     public static class Builder {
         protected byte[] body;
-        protected byte[] fromFingerprint;
-        protected byte[] toFingerprint;
+        protected String fromFingerprint;
+        protected String toFingerprint;
         protected String application;
         protected String extension;
         protected String mime;
@@ -171,12 +167,12 @@ public class ScatterMessage implements Parcelable {
             return this;
         }
 
-        public Builder setTo(byte[] to) {
+        public Builder setTo(String to) {
             this.toFingerprint = to;
             return this;
         }
 
-        public Builder setFrom(byte[] from) {
+        public Builder setFrom(String from) {
             this.fromFingerprint = from;
             return this;
         }
