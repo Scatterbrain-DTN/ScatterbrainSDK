@@ -34,7 +34,6 @@ class BinderWrapperImpl @Inject constructor(
 
     private var binder: ScatterbrainAPI? = null
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
-    private val pm = context.packageManager
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -56,6 +55,14 @@ class BinderWrapperImpl @Inject constructor(
             bindCallbackSet.forEach { c -> c(false) }
             bindCallbackSet.clear()
         }
+    }
+
+    override fun registerCallback() {
+        bindCallbackSet.forEach { registerCallback(it) }
+    }
+
+    override fun unregisterCallback() {
+        bindCallbackSet.forEach { unregisterCallback(it) }
     }
 
     private fun registerCallback(c: (Boolean?) -> Unit) {

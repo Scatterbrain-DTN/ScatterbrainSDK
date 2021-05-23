@@ -4,6 +4,8 @@ import android.content.pm.ApplicationInfo
 import kotlinx.coroutines.flow.Flow
 
 interface BinderWrapper {
+    fun registerCallback()
+    fun unregisterCallback()
     suspend fun startService()
     suspend fun stopService()
     suspend fun bindService()

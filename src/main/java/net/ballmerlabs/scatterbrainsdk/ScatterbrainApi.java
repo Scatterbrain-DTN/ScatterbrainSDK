@@ -8,18 +8,19 @@ import net.ballmerlabs.scatterbrainsdk.internal.DaggerSdkComponent;
 import net.ballmerlabs.scatterbrainsdk.internal.SdkComponent;
 
 import java.io.File;
+import java.util.Objects;
 
 public class ScatterbrainApi {
     public static int MAX_BODY_SIZE = 1024*1024*4;
     public static final String EXTRA_TRANSACTION_RESULT = "transaction_result";
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
     public static final String KEYSTORE_ID = "scatterbrainkeystore";
-    private final Context applicationContext;
     private final SdkComponent sdkComponent;
 
     public ScatterbrainApi(Context applicationContext) {
-        this.applicationContext = applicationContext;
-        sdkComponent = DaggerSdkComponent.builder().applicationContext(applicationContext).build();
+        sdkComponent = Objects.requireNonNull(
+                DaggerSdkComponent.builder().applicationContext(applicationContext)
+        ).build();
     }
 
     public BinderWrapper getBinderWrapper() {
@@ -43,5 +44,12 @@ public class ScatterbrainApi {
             }
             return "application/octet-stream";
         }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        sdkComponent.broadcastReceiver().unregister();
+        sdkComponent.sdk().unregisterCallback();
     }
 }
