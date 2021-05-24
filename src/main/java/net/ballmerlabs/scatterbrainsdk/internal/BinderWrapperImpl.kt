@@ -211,6 +211,16 @@ class BinderWrapperImpl @Inject constructor(
         binder!!.sendMessages(messages)
     }
 
+    override suspend fun sendMessage(message: ScatterMessage, identity: String) {
+        bindService()
+        binder!!.sendAndSignMessage(message, identity)
+    }
+
+    override suspend fun sendMessage(messages: List<ScatterMessage>, identity: String) {
+        bindService()
+        messages.forEach { binder!!.sendAndSignMessage(it, identity) }
+    }
+
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
         bindService()
         binder!!.sendAndSignMessage(message, identity.fingerprint)

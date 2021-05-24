@@ -26,6 +26,8 @@ interface BinderWrapper {
     suspend fun stopPassive()
     suspend fun sendMessage(message: ScatterMessage)
     suspend fun sendMessage(message: ScatterMessage, identity: Identity)
+    suspend fun sendMessage(message: ScatterMessage, identity: String)
+    suspend fun sendMessage(messages: List<ScatterMessage>, identity: String)
     suspend fun sendMessage(messages: List<ScatterMessage>)
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity)
     fun isConnected(): Boolean
