@@ -24,6 +24,10 @@ interface BinderWrapper {
     suspend fun stopDiscover()
     suspend fun startPassive()
     suspend fun stopPassive()
+    suspend fun sendMessage(message: ScatterMessage)
+    suspend fun sendMessage(message: ScatterMessage, identity: Identity)
+    suspend fun sendMessage(messages: List<ScatterMessage>)
+    suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity)
     fun isConnected(): Boolean
     companion object {
         val TAG = "ServiceConnectionRepository"
