@@ -33,6 +33,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(
     private val errorCallbackSet = ConcurrentHashMap<Int, suspend (Int, String) -> Unit>()
 
     override fun onReceive(ctx: Context, intent: Intent) {
+        Log.v(TAG, "onReceive")
         coroutineScope.launch {
             when (intent.action) {
                 BROADCAST_EVENT -> {
