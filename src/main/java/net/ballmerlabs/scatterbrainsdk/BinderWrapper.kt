@@ -11,7 +11,7 @@ interface BinderWrapper {
     suspend fun getScatterMessages(application: String): List<ScatterMessage>
     suspend fun observeIdentities(): Flow<List<Identity>>
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
-    suspend fun generateIdentity(name: String): String?
+    suspend fun generateIdentity(name: String): Identity
     suspend fun getPermissions(identity: Identity): Flow<List<NamePackage>>
     suspend fun authorizeIdentity(identity: Identity, packageName: String)
     suspend fun deauthorizeIdentity(identity: Identity, packageName: String)

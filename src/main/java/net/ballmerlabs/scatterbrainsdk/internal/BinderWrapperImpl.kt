@@ -102,15 +102,8 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun generateIdentity(name: String): String? {
-        return try {
-            binderProvider.getAsync().generateIdentity(name)
-            null
-        } catch (re: RemoteException) {
-            Log.e(TAG, "remoteException")
-            re.printStackTrace()
-            re.localizedMessage
-        }
+    override suspend fun generateIdentity(name: String): Identity {
+        return binderProvider.getAsync().generateIdentity(name)
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
