@@ -16,6 +16,9 @@ public class ScatterbrainApi {
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
     public static final String EXTRA_ASYNC_RESULT = "async_result";
     public static final String EXTRA_ASYNC_HANDLE = "async_handle";
+    public static final String PERMISSION_ACCESS = "net.ballmerlabs.scatterroutingservice.permission.ACCESS";
+    public static final String PERMISSION_ADMIN = "net.ballmerlabs.scatterroutingservice.permission.ADMIN";
+    public static final String PERMISSION_SUPERUSER = "net.ballmerlabs.scatterroutingservice.permission.SUPERUSER";
 
     private final SdkComponent sdkComponent;
 

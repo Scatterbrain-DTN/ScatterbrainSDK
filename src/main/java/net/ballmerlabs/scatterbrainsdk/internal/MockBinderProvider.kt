@@ -1,7 +1,7 @@
-package net.ballmerlabs.scatterbrainsdk
+package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.os.IBinder
-import net.ballmerlabs.scatterbrainsdk.internal.BinderProvider
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
 
 class MockBinderProvider(
         val iBinder: IBinder
