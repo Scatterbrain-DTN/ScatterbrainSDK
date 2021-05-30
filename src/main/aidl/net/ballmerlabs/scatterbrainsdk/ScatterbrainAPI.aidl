@@ -5,6 +5,8 @@ import net.ballmerlabs.scatterbrainsdk.Identity;
 
 interface ScatterbrainAPI {
 
+
+    // Blocking
     List<ScatterMessage> getByApplication(String application);
 
     ScatterMessage getById(long id);
@@ -42,4 +44,16 @@ interface ScatterbrainAPI {
     boolean isDiscovering();
 
     boolean isPassive();
+
+
+    // Nonblocking
+    int signDataDetachedAsync(in byte[] data, in String identity);
+
+    int sendMessagesAsync(in List<ScatterMessage> messages);
+
+    int sendMessageAsync(in ScatterMessage message);
+
+    int sendAndSignMessageAsync(in ScatterMessage message, in String identity);
+
+    int sendAndSignMessagesAsync(in List<ScatterMessage> message, in String identity);
 }

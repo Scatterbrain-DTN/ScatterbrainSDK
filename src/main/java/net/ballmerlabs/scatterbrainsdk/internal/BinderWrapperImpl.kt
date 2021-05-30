@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.*
@@ -102,7 +103,16 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
         bindService()
-        return binder!!.signDataDetached(data, identity.fingerprint)
+        return suspendCoroutine { continuation ->
+            val res = binder!!.signDataDetachedAsync(data, identity.fingerprint)
+            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
+                val d = bundle.getByteArray(ScatterbrainApi.EXTRA_ASYNC_RESULT)
+                continuation.resumeWith(Result.success(d!!))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun unbindService(): Boolean = suspendCoroutine { ret ->
@@ -203,32 +213,71 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun sendMessage(message: ScatterMessage) {
         bindService()
-        binder!!.sendMessage(message)
+        return suspendCoroutine { continuation ->
+            val res = binder!!.sendMessageAsync(message)
+            broadcastReceiver.addOnResultCallback(res) { _, _ ->
+                continuation.resumeWith(Result.success(Unit))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>) {
         bindService()
-        binder!!.sendMessages(messages)
+        return suspendCoroutine { continuation ->
+            val res = binder!!.sendMessagesAsync(messages)
+            broadcastReceiver.addOnResultCallback(res) { _, _ ->
+                continuation.resumeWith(Result.success(Unit))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: String) {
         bindService()
-        binder!!.sendAndSignMessage(message, identity)
+        return suspendCoroutine { continuation ->
+            val res = binder!!.sendAndSignMessageAsync(message, identity)
+            broadcastReceiver.addOnResultCallback(res) { _, _ ->
+                continuation.resumeWith(Result.success(Unit))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: String) {
         bindService()
-        messages.forEach { binder!!.sendAndSignMessage(it, identity) }
+        return suspendCoroutine { continuation ->
+            val res = binder!!.sendAndSignMessagesAsync(messages, identity)
+            broadcastReceiver.addOnResultCallback(res) { _, _ ->
+                continuation.resumeWith(Result.success(Unit))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
         bindService()
-        binder!!.sendAndSignMessage(message, identity.fingerprint)
+        return suspendCoroutine { continuation ->
+            val res = binder!!.sendAndSignMessageAsync(message, identity.fingerprint)
+            broadcastReceiver.addOnResultCallback(res) { _, _ ->
+                continuation.resumeWith(Result.success(Unit))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {
-        bindService()
-        messages.forEach { binder!!.sendAndSignMessage(it, identity.fingerprint) }
+        return sendMessage(messages, identity.fingerprint)
     }
     override suspend fun removeIdentity(identity: Identity): Boolean {
         bindService()
