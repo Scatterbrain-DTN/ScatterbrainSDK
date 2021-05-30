@@ -52,6 +52,6 @@ public class ScatterbrainApi {
     protected void finalize() throws Throwable {
         super.finalize();
         sdkComponent.broadcastReceiver().unregister();
-        sdkComponent.sdk().unregisterCallback();
+        sdkComponent.binderProvider().unregisterCallback();
     }
 }

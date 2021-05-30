@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class ScatterbrainBroadcastReceiverImpl @Inject constructor(
         val context: Context,
-        @Named("defaultScope") val coroutineScope: CoroutineScope
+        @Named(SCOPE_DEFAULT) val coroutineScope: CoroutineScope
 ) : BroadcastReceiver(), ScatterbrainBroadcastReceiver {
     private val intentFilter = IntentFilter()
             .apply {

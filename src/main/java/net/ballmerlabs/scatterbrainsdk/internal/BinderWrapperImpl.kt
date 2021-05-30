@@ -30,81 +30,23 @@ import kotlin.coroutines.suspendCoroutine
 @Singleton
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
-        private val broadcastReceiver: ScatterbrainBroadcastReceiverImpl
+        private val broadcastReceiver: ScatterbrainBroadcastReceiverImpl,
+        val binderProvider: BinderProvider
 ) : BinderWrapper  {
-
-    private var binder: ScatterbrainAPI? = null
-    private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
-
-    private val callback = object: ServiceConnection {
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            binder = ScatterbrainAPI.Stub.asInterface(service)
-            Log.v(TAG, "connected to ScatterRoutingService binder")
-            try {
-                bindCallbackSet.forEach { c ->  c(true)}
-            } catch (e: RemoteException) {
-                Log.e(TAG, "RemoteException: $e")
-                bindCallbackSet.forEach { c -> c(null) }
-            } finally {
-                bindCallbackSet.clear()
-            }
-        }
-
-        override fun onServiceDisconnected(componentName: ComponentName) {
-            Log.v(TAG, "onservicedisconnected")
-            binder = null
-            bindCallbackSet.forEach { c -> c(false) }
-            bindCallbackSet.clear()
-        }
-    }
-
-    override fun registerCallback() {
-        bindCallbackSet.forEach { registerCallback(it) }
-    }
-
-    override fun unregisterCallback() {
-        bindCallbackSet.forEach { unregisterCallback(it) }
-    }
-
-    private fun registerCallback(c: (Boolean?) -> Unit) {
-        bindCallbackSet.add(c)
-    }
-
-    private fun unregisterCallback(c: (Boolean?) -> Unit) {
-        bindCallbackSet.remove(c)
-    }
-
-    private suspend fun bindServiceWithoutTimeout(): Unit = suspendCoroutine { ret ->
-        if (binder == null) {
-            registerCallback { b ->
-                if (b == null || b == false) throw IllegalStateException("failed to bind service")
-                ret.resume(Unit)
-            }
-            val bindIntent = Intent(BIND_ACTION)
-            bindIntent.`package` = BIND_PACKAGE
-            context.bindService(bindIntent, callback, 0)
-        } else {
-            ret.resume(Unit)
-        }
-    }
-
+    
     override suspend fun startService() {
         val startIntent = Intent(BIND_ACTION)
         startIntent.`package` = BIND_PACKAGE
         context.startForegroundService(startIntent)
-        bindService()
     }
 
-    override suspend fun bindService() {
-        withTimeout(5000L) {
-            bindServiceWithoutTimeout()
-        }
+    override suspend fun unbindService() {
+        binderProvider.unbindService()
     }
 
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
-        bindService()
+        val res = binderProvider.getAsync().signDataDetachedAsync(data, identity.fingerprint)
         return suspendCoroutine { continuation ->
-            val res = binder!!.signDataDetachedAsync(data, identity.fingerprint)
             broadcastReceiver.addOnResultCallback(res) { _, bundle ->
                 val d = bundle.getByteArray(ScatterbrainApi.EXTRA_ASYNC_RESULT)
                 continuation.resumeWith(Result.success(d!!))
@@ -115,20 +57,8 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun unbindService(): Boolean = suspendCoroutine { ret ->
-        try {
-            if (binder != null) {
-                context.unbindService(callback)
-            }
-            ret.resume(true)
-        } catch (e: IllegalArgumentException) {
-            ret.resume(true) //service already unbound
-        }
-    }
-
     override suspend fun getIdentities(): List<Identity> {
-        bindService()
-        return binder!!.identities
+        return binderProvider.getAsync().identities
     }
 
     override suspend fun stopService() {
@@ -139,7 +69,6 @@ class BinderWrapperImpl @Inject constructor(
 
     @ExperimentalCoroutinesApi
     override suspend fun observeIdentities(): Flow<List<Identity>>  = callbackFlow {
-        bindService()
         offer(getIdentities())
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.identities > 0) {
@@ -154,13 +83,11 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun getScatterMessages(application: String): List<ScatterMessage> {
-        bindService()
-        return binder!!.getByApplication(application)
+        return binderProvider.getAsync().getByApplication(application)
     }
 
     @ExperimentalCoroutinesApi
     override suspend fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow  {
-        bindService()
         offer(getScatterMessages(application))
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
@@ -176,9 +103,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun generateIdentity(name: String): String? {
-        bindService()
         return try {
-            binder!!.generateIdentity(name)
+            binderProvider.getAsync().generateIdentity(name)
             null
         } catch (re: RemoteException) {
             Log.e(TAG, "remoteException")
@@ -188,19 +114,16 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
-        bindService()
-        binder!!.authorizeApp(identity.fingerprint, packageName)
+        binderProvider.getAsync().authorizeApp(identity.fingerprint, packageName)
     }
 
     override suspend fun deauthorizeIdentity(identity: Identity, packageName: String) {
-        bindService()
         Log.v(TAG, "deauthorizing $packageName")
-        binder!!.deauthorizeApp(identity.fingerprint, packageName)
+        binderProvider.getAsync().deauthorizeApp(identity.fingerprint, packageName)
     }
 
     override suspend fun getPermissions(identity: Identity): Flow<List<NamePackage>> = flow {
-        bindService()
-        val identities = binder!!.getAppPermissions(identity.fingerprint)
+        val identities = binderProvider.getAsync().getAppPermissions(identity.fingerprint)
         val result = mutableListOf<NamePackage>()
         val pm = context.packageManager
         for (id in identities) {
@@ -212,9 +135,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(message: ScatterMessage) {
-        bindService()
+        val res = binderProvider.getAsync().sendMessageAsync(message)
         return suspendCoroutine { continuation ->
-            val res = binder!!.sendMessageAsync(message)
             broadcastReceiver.addOnResultCallback(res) { _, _ ->
                 continuation.resumeWith(Result.success(Unit))
             }
@@ -225,9 +147,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>) {
-        bindService()
+        val res = binderProvider.getAsync().sendMessagesAsync(messages)
         return suspendCoroutine { continuation ->
-            val res = binder!!.sendMessagesAsync(messages)
             broadcastReceiver.addOnResultCallback(res) { _, _ ->
                 continuation.resumeWith(Result.success(Unit))
             }
@@ -238,9 +159,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: String) {
-        bindService()
+        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity)
         return suspendCoroutine { continuation ->
-            val res = binder!!.sendAndSignMessageAsync(message, identity)
             broadcastReceiver.addOnResultCallback(res) { _, _ ->
                 continuation.resumeWith(Result.success(Unit))
             }
@@ -251,9 +171,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: String) {
-        bindService()
+        val res = binderProvider.getAsync().sendAndSignMessagesAsync(messages, identity)
         return suspendCoroutine { continuation ->
-            val res = binder!!.sendAndSignMessagesAsync(messages, identity)
             broadcastReceiver.addOnResultCallback(res) { _, _ ->
                 continuation.resumeWith(Result.success(Unit))
             }
@@ -264,9 +183,8 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
-        bindService()
+        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity.fingerprint)
         return suspendCoroutine { continuation ->
-            val res = binder!!.sendAndSignMessageAsync(message, identity.fingerprint)
             broadcastReceiver.addOnResultCallback(res) { _, _ ->
                 continuation.resumeWith(Result.success(Unit))
             }
@@ -280,28 +198,23 @@ class BinderWrapperImpl @Inject constructor(
         return sendMessage(messages, identity.fingerprint)
     }
     override suspend fun removeIdentity(identity: Identity): Boolean {
-        bindService()
-        return binder!!.removeIdentity(identity.fingerprint)
+        return binderProvider.getAsync().removeIdentity(identity.fingerprint)
     }
 
     override suspend fun startDiscover() {
-        bindService()
-        binder!!.startDiscovery()
+        binderProvider.getAsync().startDiscovery()
     }
 
     override suspend fun startPassive() {
-        bindService()
-        binder!!.startPassive()
+        binderProvider.getAsync().startPassive()
     }
 
     override suspend fun stopDiscover() {
-        bindService()
-        binder!!.stopDiscovery()
+        binderProvider.getAsync().stopDiscovery()
     }
 
     override suspend fun stopPassive() {
-        bindService()
-        binder!!.stopPassive()
+        binderProvider.getAsync().stopPassive()
     }
 
     override fun isConnected(): Boolean {
