@@ -217,6 +217,14 @@ class BinderWrapperImpl @Inject constructor(
         binderProvider.getAsync().stopPassive()
     }
 
+    override fun register() {
+        broadcastReceiver.register()
+    }
+
+    override fun unregister() {
+        broadcastReceiver.unregister()
+    }
+
     override fun isConnected(): Boolean {
         val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(1)) {
