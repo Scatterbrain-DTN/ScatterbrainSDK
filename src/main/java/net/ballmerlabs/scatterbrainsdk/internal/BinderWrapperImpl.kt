@@ -30,7 +30,7 @@ import kotlin.coroutines.suspendCoroutine
 @Singleton
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
-        private val broadcastReceiver: ScatterbrainBroadcastReceiverImpl,
+        private val broadcastReceiver: ScatterbrainBroadcastReceiver,
         val binderProvider: BinderProvider
 ) : BinderWrapper  {
     
