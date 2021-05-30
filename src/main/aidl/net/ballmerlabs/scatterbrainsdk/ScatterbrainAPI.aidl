@@ -45,6 +45,8 @@ interface ScatterbrainAPI {
 
     boolean isPassive();
 
+    void clearDatastore();
+
 
     // Nonblocking
     int signDataDetachedAsync(in byte[] data, in String identity);
