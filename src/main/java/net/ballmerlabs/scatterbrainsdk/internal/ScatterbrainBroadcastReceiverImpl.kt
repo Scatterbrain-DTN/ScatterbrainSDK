@@ -18,10 +18,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
-class ScatterbrainBroadcastReceiverImpl @Inject constructor(
-        val context: Context,
-        @Named(SCOPE_DEFAULT) val coroutineScope: CoroutineScope
-) : BroadcastReceiver(), ScatterbrainBroadcastReceiver {
+class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver(), ScatterbrainBroadcastReceiver {
     private val intentFilter = IntentFilter()
             .apply {
                 addAction(BROADCAST_EVENT)
@@ -31,6 +28,9 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(
     private val eventCallbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
     private val resultCallbackSet = ConcurrentHashMap<Int, suspend (Int, Bundle) -> Unit>()
     private val errorCallbackSet = ConcurrentHashMap<Int, suspend (Int, String) -> Unit>()
+
+    @Inject lateinit var context: Context
+    @Named(SCOPE_DEFAULT) @Inject lateinit var coroutineScope: CoroutineScope
 
     override fun onReceive(ctx: Context, intent: Intent) {
         Log.v(TAG, "onReceive")

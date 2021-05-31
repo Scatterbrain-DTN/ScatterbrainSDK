@@ -2,4 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.ballmerlabs.scatterbrainsdk">
 
+    <application>
+        <receiver
+            android:name=".internal.ScatterbrainBroadcastReceiverImpl"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>
