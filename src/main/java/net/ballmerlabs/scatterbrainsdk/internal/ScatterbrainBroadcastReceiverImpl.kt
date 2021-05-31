@@ -78,7 +78,11 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
     }
 
     override fun unregister() {
-        context.unregisterReceiver(this)
+        try {
+            context.unregisterReceiver(this)
+        } catch (exception: IllegalArgumentException) {
+            Log.w(TAG, "failed to unregister receiver")
+        }
     }
 
     override fun addOnReceiveCallback(r: suspend (HandshakeResult) -> Unit) {
