@@ -41,6 +41,10 @@ interface ScatterbrainAPI {
 
     String[] getAppPermissions(in String identity);
 
+    List<String> getKnownPackages();
+
+    int getKnownPackagesAsync();
+
     boolean isDiscovering();
 
     boolean isPassive();
