@@ -27,6 +27,7 @@ interface BinderWrapper {
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: String)
     suspend fun sendMessage(messages: List<ScatterMessage>)
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity)
+    suspend fun getPackages(): List<String>
     fun register()
     fun unregister()
     fun isConnected(): Boolean

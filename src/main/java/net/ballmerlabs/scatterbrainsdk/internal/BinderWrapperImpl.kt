@@ -187,6 +187,20 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+    override suspend fun getPackages(): List<String> {
+        val res = binderProvider.getAsync().knownPackagesAsync
+        return suspendCoroutine { continuation ->
+            broadcastReceiver.addOnResultCallback(res) { _, v ->
+                continuation.resumeWith(Result.success(
+                        v.getStringArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
+                ))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
+    }
+
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {
         return sendMessage(messages, identity.fingerprint)
     }
