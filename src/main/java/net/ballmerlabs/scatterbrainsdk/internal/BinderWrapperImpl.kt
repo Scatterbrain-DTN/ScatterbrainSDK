@@ -14,6 +14,7 @@ import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.suspendCoroutine
@@ -75,8 +76,27 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllScatterMessages(application: String): List<ScatterMessage> {
+    override suspend fun getScatterMessages(application: String): List<ScatterMessage> {
         val res = binderProvider.getAsync().getByApplicationAsync(application)
+        return suspendCoroutine { continuation ->
+            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
+                continuation.resumeWith(Result.success(bundle.getParcelableArrayList<ScatterMessage>(
+                        ScatterbrainApi.EXTRA_ASYNC_RESULT
+                )!!))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
+    }
+
+
+    override suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage> {
+        return getScatterMessages(application, since, Date())
+    }
+
+    override suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage> {
+        val res = binderProvider.getAsync().getByApplicationDateAsync(application, start.time, end.time)
         return suspendCoroutine { continuation ->
             broadcastReceiver.addOnResultCallback(res) { _, bundle ->
                 continuation.resumeWith(Result.success(bundle.getParcelableArrayList<ScatterMessage>(
@@ -91,10 +111,10 @@ class BinderWrapperImpl @Inject constructor(
 
     @ExperimentalCoroutinesApi
     override suspend fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow  {
-        offer(getAllScatterMessages(application))
+        offer(getScatterMessages(application))
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
-                offer(getAllScatterMessages(application))
+                offer(getScatterMessages(application))
             }
         }
 

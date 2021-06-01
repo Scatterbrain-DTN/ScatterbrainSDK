@@ -2,13 +2,16 @@ package net.ballmerlabs.scatterbrainsdk
 
 import android.content.pm.ApplicationInfo
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 interface BinderWrapper {
     suspend fun startService()
     suspend fun stopService()
     suspend fun unbindService()
     suspend fun getIdentities(): List<Identity>
-    suspend fun getAllScatterMessages(application: String): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage>
     suspend fun observeIdentities(): Flow<List<Identity>>
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
     suspend fun generateIdentity(name: String): Identity
