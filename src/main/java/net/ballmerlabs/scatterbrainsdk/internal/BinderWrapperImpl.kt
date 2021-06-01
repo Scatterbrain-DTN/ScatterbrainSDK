@@ -1,20 +1,14 @@
 package net.ballmerlabs.scatterbrainsdk.internal
 import android.app.ActivityManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.os.IBinder
-import android.os.RemoteException
 import android.util.Log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
@@ -22,7 +16,6 @@ import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
@@ -82,16 +75,26 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun getScatterMessages(application: String): List<ScatterMessage> {
-        return binderProvider.getAsync().getByApplication(application)
+    override suspend fun getAllScatterMessages(application: String): List<ScatterMessage> {
+        val res = binderProvider.getAsync().getByApplicationAsync(application)
+        return suspendCoroutine { continuation ->
+            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
+                continuation.resumeWith(Result.success(bundle.getParcelableArrayList<ScatterMessage>(
+                        ScatterbrainApi.EXTRA_ASYNC_RESULT
+                )!!))
+            }
+            broadcastReceiver.addOnErrorCallback(res) { _, str ->
+                continuation.resumeWith(Result.failure(IllegalStateException(str)))
+            }
+        }
     }
 
     @ExperimentalCoroutinesApi
     override suspend fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow  {
-        offer(getScatterMessages(application))
+        offer(getAllScatterMessages(application))
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
-                offer(getScatterMessages(application))
+                offer(getAllScatterMessages(application))
             }
         }
 

@@ -8,7 +8,7 @@ interface BinderWrapper {
     suspend fun stopService()
     suspend fun unbindService()
     suspend fun getIdentities(): List<Identity>
-    suspend fun getScatterMessages(application: String): List<ScatterMessage>
+    suspend fun getAllScatterMessages(application: String): List<ScatterMessage>
     suspend fun observeIdentities(): Flow<List<Identity>>
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
     suspend fun generateIdentity(name: String): Identity
