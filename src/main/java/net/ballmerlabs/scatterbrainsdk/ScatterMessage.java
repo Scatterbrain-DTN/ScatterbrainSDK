@@ -2,6 +2,7 @@ package net.ballmerlabs.scatterbrainsdk;
 
 import android.net.Uri;
 import android.os.BadParcelableException;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
@@ -9,6 +10,7 @@ import android.webkit.MimeTypeMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ScatterMessage implements Parcelable {
@@ -21,6 +23,8 @@ public class ScatterMessage implements Parcelable {
     protected final String extension;
     protected final String mime;
     protected final String filename;
+    protected final Date sendDate;
+    protected final Date receiveDate;
     protected final ParcelFileDescriptor fileDescriptor;
     protected final int toDisk;
     public static final int DISK = 1;
@@ -45,6 +49,8 @@ public class ScatterMessage implements Parcelable {
         this.fileDescriptor = in.readFileDescriptor();
         this.fingerprint = in.readString();
         this.toDisk = in.readInt();
+        this.sendDate = new Date(in.readLong());
+        this.receiveDate = new Date(in.readLong());
     }
 
     protected ScatterMessage(Builder builder) {
@@ -58,6 +64,8 @@ public class ScatterMessage implements Parcelable {
         this.fileDescriptor = builder.fileDescriptor;
         this.fingerprint = builder.fingerprint;
         this.toDisk = builder.todisk;
+        this.sendDate = builder.sendDate;
+        this.receiveDate = builder.receiveDate;
     }
 
     public static final Creator<ScatterMessage> CREATOR = new Creator<ScatterMessage>() {
@@ -156,6 +164,8 @@ public class ScatterMessage implements Parcelable {
         protected String fingerprint = "";
         protected boolean fileNotFound = false;
         protected int todisk = NODISK;
+        protected Date sendDate = new Date(0L);
+        protected Date receiveDate = new Date(0L);
 
         protected Builder() {
             this.fingerprint = "";
@@ -179,6 +189,11 @@ public class ScatterMessage implements Parcelable {
 
         public Builder setApplication(String application) {
             this.application = application;
+            return this;
+        }
+
+        public Builder setSendDate(Date sendDate) {
+            this.sendDate = sendDate;
             return this;
         }
 

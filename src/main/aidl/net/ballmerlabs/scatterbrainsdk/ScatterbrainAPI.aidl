@@ -9,6 +9,8 @@ interface ScatterbrainAPI {
     // Blocking
     List<ScatterMessage> getByApplication(String application);
 
+    List<ScatterMessage> getByApplicationDate(String application, long startDate, long endDate);
+
     ScatterMessage getById(long id);
 
     List<Identity> getIdentities();
@@ -62,4 +64,8 @@ interface ScatterbrainAPI {
     int sendAndSignMessageAsync(in ScatterMessage message, in String identity);
 
     int sendAndSignMessagesAsync(in List<ScatterMessage> message, in String identity);
+
+    int getByApplicationAsync(String application);
+
+    int getByApplicationDateAsync(String application, long startDate, long endDate);
 }
