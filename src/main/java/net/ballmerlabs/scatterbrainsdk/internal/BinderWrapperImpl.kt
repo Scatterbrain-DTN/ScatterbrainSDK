@@ -111,18 +111,17 @@ class BinderWrapperImpl @Inject constructor(
 
     @ExperimentalCoroutinesApi
     override suspend fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow  {
-        offer(getScatterMessages(application))
+        var now = Date()
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
-                offer(getScatterMessages(application))
+                offer(getScatterMessages(application, now))
+                now = Date()
             }
         }
 
         broadcastReceiver.addOnReceiveCallback(callback)
 
-        awaitClose {
-            broadcastReceiver.removeOnReceiveCallback(callback)
-        }
+        awaitClose { broadcastReceiver.removeOnReceiveCallback(callback) }
     }
 
     override suspend fun generateIdentity(name: String): Identity {
