@@ -157,7 +157,7 @@ open class ScatterMessage private constructor(
             check(!fileNotFound) { "file not found" }
         }
 
-        fun build(): ScatterMessage? {
+        fun build(): ScatterMessage {
             verify()
             return ScatterMessage(
                     body = body,
