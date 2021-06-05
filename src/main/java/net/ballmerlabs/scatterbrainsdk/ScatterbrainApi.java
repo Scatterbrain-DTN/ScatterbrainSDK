@@ -19,6 +19,7 @@ public class ScatterbrainApi {
     public static final String PERMISSION_ACCESS = "net.ballmerlabs.scatterroutingservice.permission.ACCESS";
     public static final String PERMISSION_ADMIN = "net.ballmerlabs.scatterroutingservice.permission.ADMIN";
     public static final String PERMISSION_SUPERUSER = "net.ballmerlabs.scatterroutingservice.permission.SUPERUSER";
+    public static final String DEFAULT_MIME = "application/octet-stream";
 
     private final SdkComponent sdkComponent;
 
