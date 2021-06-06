@@ -8,9 +8,9 @@ import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.*
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -120,9 +120,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
 
     companion object {
         const val TAG = "BroadcastReceiver"
-        const val BROADCAST_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT"
-        const val BROADCAST_RESULT = "net.ballmerlabs.scatterroutingservice.broadcast.API_RESULT"
-        const val BROADCAST_ERROR = "net.ballmerlabs.scatterroutingservice.broadcast.API"
     }
 
 }
