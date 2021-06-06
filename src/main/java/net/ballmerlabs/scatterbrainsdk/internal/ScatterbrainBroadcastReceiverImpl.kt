@@ -8,14 +8,19 @@ import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.*
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+
+data class AsyncCallback(
+        val result: suspend (Int, Bundle) -> Unit,
+        val err: suspend (Int, String) -> Unit
+)
 
 @Singleton
 class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver(), ScatterbrainBroadcastReceiver {
@@ -26,9 +31,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                 addAction(BROADCAST_ERROR)
             }
     private val eventCallbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
-    private val resultCallbackSet = ConcurrentHashMap<Int, suspend (Int, Bundle) -> Unit>()
-    private val errorCallbackSet = ConcurrentHashMap<Int, suspend (Int, String) -> Unit>()
-
+    private val resultCallbackSet = ConcurrentHashMap<Int, AsyncCallback>()
     @Inject lateinit var context: Context
     @Named(SCOPE_DEFAULT) @Inject lateinit var coroutineScope: CoroutineScope
 
@@ -47,7 +50,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                     resultCallbackSet.forEach { (key, value) ->
                         yield()
                         if (key == intent.getIntExtra(ScatterbrainApi.EXTRA_ASYNC_HANDLE, -1)) {
-                            value(
+                            value.result(
                                     key,
                                     intent.getBundleExtra(ScatterbrainApi.EXTRA_ASYNC_RESULT)
                                             ?: Bundle.EMPTY
@@ -57,14 +60,14 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                     }
                 }
                 BROADCAST_ERROR -> {
-                    errorCallbackSet.forEach { (key, value) ->
+                    resultCallbackSet.forEach { (key, value) ->
                         yield()
                         if (key == intent.getIntExtra(ScatterbrainApi.EXTRA_ASYNC_HANDLE, -1)) {
-                            value(
+                            value.err(
                                     key,
                                     intent.getStringExtra(ScatterbrainApi.EXTRA_ASYNC_RESULT)?: ""
                             )
-                            errorCallbackSet.remove(key)
+                            resultCallbackSet.remove(key)
                         }
                     }
                 }
@@ -93,17 +96,11 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
         eventCallbackSet.remove(r)
     }
 
-    override fun addOnResultCallback(handle: Int, r: suspend (Int, Bundle) -> Unit) {
+    override fun addOnResultCallback(handle: Int, r: AsyncCallback) {
         resultCallbackSet[handle] = r
     }
 
-    override fun addOnErrorCallback(handle: Int, r: suspend (Int, String) -> Unit) {
-        errorCallbackSet[handle] = r
-    }
 
-    override fun removeOnErrorCallback(handle: Int) {
-        errorCallbackSet.remove(handle)
-    }
 
     override fun removeOnResultCallback(handle: Int) {
         resultCallbackSet.remove(handle)
@@ -111,7 +108,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
 
     override fun wipeAsyncCallbacks() {
         resultCallbackSet.clear()
-        errorCallbackSet.clear()
     }
 
     override fun wipeResultCallbacks() {
@@ -120,9 +116,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
 
     companion object {
         const val TAG = "BroadcastReceiver"
-        const val BROADCAST_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT"
-        const val BROADCAST_RESULT = "net.ballmerlabs.scatterroutingservice.broadcast.API_RESULT"
-        const val BROADCAST_ERROR = "net.ballmerlabs.scatterroutingservice.broadcast.API"
     }
 
 }

@@ -3,6 +3,8 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -38,17 +40,59 @@ class BinderWrapperImpl @Inject constructor(
         binderProvider.unbindService()
     }
 
+
+    private suspend fun registerResultUnit(res: Int) = suspendCoroutine<Unit>{ continuation ->
+        val result: suspend (Int, Bundle) -> Unit = { _, _ ->
+            continuation.resumeWith(Result.success(Unit))
+        }
+        val err: suspend (Int, String) -> Unit = { _, str ->
+            continuation.resumeWith(Result.failure(IllegalStateException(str)))
+        }
+        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
+    }
+
+    private suspend inline fun <reified T: Parcelable> registerResultParcelableArray(
+            res: Int
+    ) = suspendCoroutine<ArrayList<T>> { continuation ->
+        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
+            continuation.resumeWith(Result.success(
+                    bundle.getParcelableArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
+            ))
+        }
+        val err: suspend (Int, String) -> Unit = { _, str ->
+            continuation.resumeWith(Result.failure(IllegalStateException(str)))
+        }
+        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
+    }
+
+    private suspend fun registerResultByteArray(res: Int) = suspendCoroutine<ByteArray> { continuation ->
+        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
+            continuation.resumeWith(Result.success(
+                    bundle.getByteArray(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
+            ))
+        }
+        val err: suspend (Int, String) -> Unit = { _, str ->
+            continuation.resumeWith(Result.failure(IllegalStateException(str)))
+        }
+        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
+    }
+
+    private suspend fun registerResultStringArrayList(res: Int) = suspendCoroutine<ArrayList<String>> { continuation ->
+        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
+            continuation.resumeWith(Result.success(
+                    bundle.getStringArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
+            ))
+        }
+        val err: suspend (Int, String) -> Unit = { _, str ->
+            continuation.resumeWith(Result.failure(IllegalStateException(str)))
+        }
+        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
+    }
+
+
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
         val res = binderProvider.getAsync().signDataDetachedAsync(data, identity.fingerprint)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
-                val d = bundle.getByteArray(ScatterbrainApi.EXTRA_ASYNC_RESULT)
-                continuation.resumeWith(Result.success(d!!))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultByteArray(res)
     }
 
     override suspend fun getIdentities(): List<Identity> {
@@ -78,16 +122,7 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun getScatterMessages(application: String): List<ScatterMessage> {
         val res = binderProvider.getAsync().getByApplicationAsync(application)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
-                continuation.resumeWith(Result.success(bundle.getParcelableArrayList<ScatterMessage>(
-                        ScatterbrainApi.EXTRA_ASYNC_RESULT
-                )!!))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultParcelableArray(res)
     }
 
 
@@ -97,16 +132,7 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage> {
         val res = binderProvider.getAsync().getByApplicationDateAsync(application, start.time, end.time)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, bundle ->
-                continuation.resumeWith(Result.success(bundle.getParcelableArrayList<ScatterMessage>(
-                        ScatterbrainApi.EXTRA_ASYNC_RESULT
-                )!!))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultParcelableArray(res)
     }
 
     @ExperimentalCoroutinesApi
@@ -151,76 +177,32 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun sendMessage(message: ScatterMessage) {
         val res = binderProvider.getAsync().sendMessageAsync(message)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, _ ->
-                continuation.resumeWith(Result.success(Unit))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultUnit(res)
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>) {
         val res = binderProvider.getAsync().sendMessagesAsync(messages)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, _ ->
-                continuation.resumeWith(Result.success(Unit))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultUnit(res)
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: String) {
         val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, _ ->
-                continuation.resumeWith(Result.success(Unit))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultUnit(res)
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: String) {
         val res = binderProvider.getAsync().sendAndSignMessagesAsync(messages, identity)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, _ ->
-                continuation.resumeWith(Result.success(Unit))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultUnit(res)
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
         val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity.fingerprint)
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, _ ->
-                continuation.resumeWith(Result.success(Unit))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultUnit(res)
     }
 
     override suspend fun getPackages(): List<String> {
         val res = binderProvider.getAsync().knownPackagesAsync
-        return suspendCoroutine { continuation ->
-            broadcastReceiver.addOnResultCallback(res) { _, v ->
-                continuation.resumeWith(Result.success(
-                        v.getStringArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
-                ))
-            }
-            broadcastReceiver.addOnErrorCallback(res) { _, str ->
-                continuation.resumeWith(Result.failure(IllegalStateException(str)))
-            }
-        }
+        return registerResultStringArrayList(res)
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {
