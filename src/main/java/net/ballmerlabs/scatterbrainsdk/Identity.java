@@ -82,7 +82,7 @@ public class Identity implements Parcelable {
         sig = new byte[in.readInt()];
         in.readByteArray(sig);
         fingerprint = in.readString();
-        hasPrivateKey = in.readBoolean();
+        hasPrivateKey = hasKey(in.readByte());
     }
 
     public static final Creator<Identity> CREATOR = new Creator<Identity>() {
@@ -113,7 +113,7 @@ public class Identity implements Parcelable {
         parcel.writeInt(sig.length);
         parcel.writeByteArray(sig);
         parcel.writeString(fingerprint);
-        parcel.writeBoolean(hasPrivateKey);
+        parcel.writeByte(hasKey(hasPrivateKey));
     }
 
     public Map<String, byte[]> getmPubKeymap() {
@@ -142,5 +142,22 @@ public class Identity implements Parcelable {
 
     protected void setHasPrivateKey(boolean key) {
         this.hasPrivateKey = key;
+    }
+
+
+    private static boolean hasKey(int val) {
+        if (val == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static byte hasKey(boolean val) {
+        if (val) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 }
