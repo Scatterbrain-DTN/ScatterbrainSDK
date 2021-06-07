@@ -43,8 +43,7 @@ open class ScatterMessage private constructor(
         val sendDate: Date,
         val receiveDate: Date,
         val fileDescriptor: ParcelFileDescriptor?,
-        val toDisk: Boolean,
-        val shouldSign: Boolean
+        val toDisk: Boolean
 ): Parcelable {
 
     private constructor(parcel: Parcel): this(
@@ -58,8 +57,7 @@ open class ScatterMessage private constructor(
             fileDescriptor = parcel.readFileDescriptor(),
             toDisk = boolConvert(parcel.readInt()),
             sendDate = Date(parcel.readLong()),
-            receiveDate = Date(parcel.readLong()),
-            shouldSign = boolConvert(parcel.readInt())
+            receiveDate = Date(parcel.readLong())
     )
 
     override fun describeContents(): Int {
@@ -79,7 +77,6 @@ open class ScatterMessage private constructor(
         parcel.writeInt(boolConvert(toDisk))
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
-        parcel.writeInt(boolConvert(shouldSign))
     }
 
     data class Builder(
@@ -95,8 +92,7 @@ open class ScatterMessage private constructor(
             private var fileNotFound: Boolean = false,
             private var todisk:Boolean = fileDescriptor != null,
             private var sendDate: Date = Date(0L),
-            private var receiveDate: Date = Date(0L),
-            private var shouldSign: Boolean = false
+            private var receiveDate: Date = Date(0L)
     ) {
 
         fun setBody(body: ByteArray?) = apply {
@@ -118,10 +114,6 @@ open class ScatterMessage private constructor(
 
         fun setSendDate(sendDate: Date) = apply {
             this.sendDate = sendDate
-        }
-
-        fun enableSigning() = apply {
-            this.shouldSign = true
         }
 
         fun setFile(file: File?, mode: Int) = apply {
@@ -157,21 +149,20 @@ open class ScatterMessage private constructor(
             check(!fileNotFound) { "file not found" }
         }
 
-        fun build(): ScatterMessage? {
+        fun build(): ScatterMessage {
             verify()
             return ScatterMessage(
                     body = body,
                     toFingerprint = toFingerprint,
                     fromFingerprint = fromFingerprint,
                     application = application!!,
-                    extension = extension!!,
-                    mime = mime!!,
+                    extension = extension?:"",
+                    mime = mime?: ScatterbrainApi.DEFAULT_MIME,
                     filename = filename,
                     fileDescriptor = fileDescriptor,
                     toDisk = todisk,
                     sendDate = sendDate,
-                    receiveDate = receiveDate,
-                    shouldSign = shouldSign
+                    receiveDate = receiveDate
             )
         }
 

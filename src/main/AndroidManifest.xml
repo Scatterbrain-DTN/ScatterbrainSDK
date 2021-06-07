@@ -5,7 +5,8 @@
     <application>
         <receiver
             android:name=".internal.ScatterbrainBroadcastReceiverImpl"
-            android:exported="true">
+            android:exported="true"
+            android:permission="net.ballmerlabs.scatterroutingservice.permission.SUPERUSER">
             <intent-filter>
                 <action android:name="net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT" />
             </intent-filter>
