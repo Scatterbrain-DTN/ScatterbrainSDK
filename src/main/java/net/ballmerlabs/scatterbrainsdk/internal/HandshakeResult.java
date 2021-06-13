@@ -19,6 +19,10 @@ public class HandshakeResult implements Parcelable {
         status = TransactionStatus.values()[in.readInt()];
     }
 
+    public Boolean getSuccess() {
+        return status == TransactionStatus.STATUS_SUCCESS;
+    }
+
     public static final Creator<HandshakeResult> CREATOR = new Creator<HandshakeResult>() {
         @Override
         public HandshakeResult createFromParcel(Parcel in) {
