@@ -116,10 +116,10 @@ open class ScatterMessage private constructor(
             this.sendDate = sendDate
         }
 
-        fun setFile(file: File?, mode: Int) = apply {
+        fun setFile(file: File?) = apply {
             if (file != null) {
                 try {
-                    fileDescriptor = ParcelFileDescriptor.open(file, mode)
+                    fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
                     this.extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString())
                     mime = ScatterbrainApi.getMimeType(file)
                     filename = file.name
