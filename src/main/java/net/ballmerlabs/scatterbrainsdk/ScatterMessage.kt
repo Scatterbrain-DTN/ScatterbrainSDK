@@ -1,10 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk
 
 import android.net.Uri
-import android.os.BadParcelableException
-import android.os.Parcel
-import android.os.ParcelFileDescriptor
-import android.os.Parcelable
+import android.os.*
 import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.FileNotFoundException
@@ -43,7 +40,8 @@ open class ScatterMessage private constructor(
         val sendDate: Date,
         val receiveDate: Date,
         val fileDescriptor: ParcelFileDescriptor?,
-        val toDisk: Boolean
+        val toDisk: Boolean,
+        val id: ParcelUuid?
 ): Parcelable {
 
     private constructor(parcel: Parcel): this(
@@ -57,7 +55,8 @@ open class ScatterMessage private constructor(
             fileDescriptor = parcel.readFileDescriptor(),
             toDisk = boolConvert(parcel.readInt()),
             sendDate = Date(parcel.readLong()),
-            receiveDate = Date(parcel.readLong())
+            receiveDate = Date(parcel.readLong()),
+            id = parcel.readParcelable(ParcelUuid::class.java.classLoader)
     )
 
     override fun describeContents(): Int {
@@ -77,6 +76,7 @@ open class ScatterMessage private constructor(
         parcel.writeInt(boolConvert(toDisk))
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
+        parcel.writeParcelable(id, i)
     }
 
     data class Builder(
@@ -92,7 +92,8 @@ open class ScatterMessage private constructor(
             private var fileNotFound: Boolean = false,
             private var todisk:Boolean = fileDescriptor != null,
             private var sendDate: Date = Date(0L),
-            private var receiveDate: Date = Date(0L)
+            private var receiveDate: Date = Date(0L),
+            private var id: ParcelUuid? = null
     ) {
 
         fun setBody(body: ByteArray?) = apply {
@@ -114,6 +115,10 @@ open class ScatterMessage private constructor(
 
         fun setSendDate(sendDate: Date) = apply {
             this.sendDate = sendDate
+        }
+
+        fun setId(id: UUID) = apply {
+            this.id =  ParcelUuid(id)
         }
 
         fun setFile(file: File?) = apply {
@@ -162,7 +167,8 @@ open class ScatterMessage private constructor(
                     fileDescriptor = fileDescriptor,
                     toDisk = todisk,
                     sendDate = sendDate,
-                    receiveDate = receiveDate
+                    receiveDate = receiveDate,
+                    id = id
             )
         }
 
