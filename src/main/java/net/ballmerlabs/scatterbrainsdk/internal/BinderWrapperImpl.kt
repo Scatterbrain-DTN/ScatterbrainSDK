@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -96,7 +97,7 @@ class BinderWrapperImpl @Inject constructor(
 
 
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
-        val res = binderProvider.getAsync().signDataDetachedAsync(data, identity.fingerprint)
+        val res = binderProvider.getAsync().signDataDetachedAsync(data, ParcelUuid(identity.fingerprint))
         return registerResultByteArray(res)
     }
 
@@ -160,16 +161,16 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
-        binderProvider.getAsync().authorizeApp(identity.fingerprint, packageName)
+        binderProvider.getAsync().authorizeApp(ParcelUuid(identity.fingerprint), packageName)
     }
 
     override suspend fun deauthorizeIdentity(identity: Identity, packageName: String) {
         Log.v(TAG, "deauthorizing $packageName")
-        binderProvider.getAsync().deauthorizeApp(identity.fingerprint, packageName)
+        binderProvider.getAsync().deauthorizeApp(ParcelUuid(identity.fingerprint), packageName)
     }
 
     override suspend fun getPermissions(identity: Identity): Flow<List<NamePackage>> = flow {
-        val identities = binderProvider.getAsync().getAppPermissions(identity.fingerprint)
+        val identities = binderProvider.getAsync().getAppPermissions(ParcelUuid(identity.fingerprint))
         val result = mutableListOf<NamePackage>()
         val pm = context.packageManager
         for (id in identities) {
@@ -190,18 +191,18 @@ class BinderWrapperImpl @Inject constructor(
         return registerResultUnit(res)
     }
 
-    override suspend fun sendMessage(message: ScatterMessage, identity: String) {
-        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity)
+    override suspend fun sendMessage(message: ScatterMessage, identity: UUID) {
+        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, ParcelUuid(identity))
         return registerResultUnit(res)
     }
 
-    override suspend fun sendMessage(messages: List<ScatterMessage>, identity: String) {
-        val res = binderProvider.getAsync().sendAndSignMessagesAsync(messages, identity)
+    override suspend fun sendMessage(messages: List<ScatterMessage>, identity: UUID) {
+        val res = binderProvider.getAsync().sendAndSignMessagesAsync(messages, ParcelUuid(identity))
         return registerResultUnit(res)
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
-        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, identity.fingerprint)
+        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, ParcelUuid(identity.fingerprint))
         return registerResultUnit(res)
     }
 
@@ -214,7 +215,7 @@ class BinderWrapperImpl @Inject constructor(
         return sendMessage(messages, identity.fingerprint)
     }
     override suspend fun removeIdentity(identity: Identity): Boolean {
-        return binderProvider.getAsync().removeIdentity(identity.fingerprint)
+        return binderProvider.getAsync().removeIdentity(ParcelUuid(identity.fingerprint))
     }
 
     override suspend fun startDiscover() {
