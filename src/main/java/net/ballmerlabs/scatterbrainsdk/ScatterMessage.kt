@@ -31,8 +31,8 @@ private fun boolConvert(boolean: Boolean): Int {
 
 open class ScatterMessage private constructor(
         val body: ByteArray?,
-        val fromFingerprint: String?,
-        val toFingerprint: String?,
+        val fromFingerprint: UUID?,
+        val toFingerprint: UUID?,
         open val application: String,
         val extension: String,
         val mime: String,
@@ -46,8 +46,8 @@ open class ScatterMessage private constructor(
 
     private constructor(parcel: Parcel): this(
             body = readByteArray(parcel),
-            fromFingerprint = parcel.readString(),
-            toFingerprint = parcel.readString(),
+            fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
+            toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
             extension = parcel.readString()!!,
             mime =  parcel.readString()!!,
@@ -66,8 +66,8 @@ open class ScatterMessage private constructor(
     override fun writeToParcel(parcel: Parcel, i: Int) {
         parcel.writeInt(body!!.size)
         parcel.writeByteArray(body)
-        parcel.writeString(fromFingerprint)
-        parcel.writeString(toFingerprint)
+        parcel.writeParcelable(if (fromFingerprint == null) null else ParcelUuid(fromFingerprint), i)
+        parcel.writeParcelable(if (toFingerprint == null) null else ParcelUuid(toFingerprint), i)
         parcel.writeString(application)
         parcel.writeString(extension)
         parcel.writeString(mime)
@@ -81,8 +81,8 @@ open class ScatterMessage private constructor(
 
     data class Builder(
             private var body: ByteArray? = null,
-            private var fromFingerprint: String? = null,
-            private var toFingerprint: String? = null,
+            private var fromFingerprint: UUID? = null,
+            private var toFingerprint: UUID? = null,
             private var application: String? = null,
             private var extension: String? = null,
             private var mime: String? = null,
@@ -101,11 +101,11 @@ open class ScatterMessage private constructor(
             todisk = false
         }
 
-        fun setTo(to: String?) = apply {
+        fun setTo(to: UUID?) = apply {
             toFingerprint = to
         }
 
-        fun setFrom(from: String?) = apply {
+        fun setFrom(from: UUID?) = apply {
             fromFingerprint = from
         }
 

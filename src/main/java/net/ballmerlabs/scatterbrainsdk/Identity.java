@@ -1,6 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk;
 
 import android.os.Parcel;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Identity implements Parcelable {
 
@@ -15,7 +17,7 @@ public class Identity implements Parcelable {
     protected final byte[] mScatterbrainPubKey;
     protected final String givenname;
     protected final byte[] sig;
-    protected final String fingerprint;
+    protected final UUID fingerprint;
     protected boolean hasPrivateKey;
 
     protected Identity(
@@ -23,7 +25,7 @@ public class Identity implements Parcelable {
             byte[] pub, 
             String name, 
             byte[] sig, 
-            String fingerprint, 
+            UUID fingerprint,
             boolean hasPrivateKey
     ) {
         this.mPubKeymap = map;
@@ -81,7 +83,8 @@ public class Identity implements Parcelable {
         givenname = in.readString();
         sig = new byte[in.readInt()];
         in.readByteArray(sig);
-        fingerprint = in.readString();
+        ParcelUuid uuid = in.readParcelable(ParcelUuid.class.getClassLoader());
+        fingerprint = uuid.getUuid();
         hasPrivateKey = hasKey(in.readByte());
     }
 
@@ -112,7 +115,7 @@ public class Identity implements Parcelable {
         parcel.writeString(givenname);
         parcel.writeInt(sig.length);
         parcel.writeByteArray(sig);
-        parcel.writeString(fingerprint);
+        parcel.writeParcelable(new ParcelUuid(fingerprint), i);
         parcel.writeByte(hasKey(hasPrivateKey));
     }
 
@@ -132,7 +135,7 @@ public class Identity implements Parcelable {
         return sig;
     }
 
-    public String getFingerprint() {
+    public UUID getFingerprint() {
         return fingerprint;
     }
     

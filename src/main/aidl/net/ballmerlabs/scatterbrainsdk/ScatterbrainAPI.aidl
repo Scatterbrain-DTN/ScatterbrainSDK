@@ -15,13 +15,13 @@ interface ScatterbrainAPI {
 
     List<Identity> getIdentities();
 
-    Identity getIdentityByFingerprint(in String fingerprint);
+    Identity getIdentityByFingerprint(in ParcelUuid fingerprint);
 
     void sendMessage(in ScatterMessage message);
 
-    void sendAndSignMessage(in ScatterMessage message, in String identity);
+    void sendAndSignMessage(in ScatterMessage message, in ParcelUuid identity);
 
-    byte[] signDataDetached(in byte[] data, in String identity);
+    byte[] signDataDetached(in byte[] data, in ParcelUuid identity);
 
     void sendMessages(in List<ScatterMessage> messages);
 
@@ -35,13 +35,13 @@ interface ScatterbrainAPI {
 
     Identity generateIdentity(in String name);
 
-    boolean removeIdentity(in String identity);
+    boolean removeIdentity(in ParcelUuid identity);
 
-    void authorizeApp(in String identity, in String packagename);
+    void authorizeApp(in ParcelUuid identity, in String packagename);
 
-    void deauthorizeApp(in String identity, in String packagename);
+    void deauthorizeApp(in ParcelUuid identity, in String packagename);
 
-    String[] getAppPermissions(in String identity);
+    String[] getAppPermissions(in ParcelUuid identity);
 
     List<String> getKnownPackages();
 
@@ -55,15 +55,15 @@ interface ScatterbrainAPI {
 
 
     // Nonblocking
-    int signDataDetachedAsync(in byte[] data, in String identity);
+    int signDataDetachedAsync(in byte[] data, in ParcelUuid identity);
 
     int sendMessagesAsync(in List<ScatterMessage> messages);
 
     int sendMessageAsync(in ScatterMessage message);
 
-    int sendAndSignMessageAsync(in ScatterMessage message, in String identity);
+    int sendAndSignMessageAsync(in ScatterMessage message, in ParcelUuid identity);
 
-    int sendAndSignMessagesAsync(in List<ScatterMessage> message, in String identity);
+    int sendAndSignMessagesAsync(in List<ScatterMessage> message, in ParcelUuid identity);
 
     int getByApplicationAsync(String application);
 
