@@ -20,6 +20,8 @@ import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
@@ -97,8 +99,21 @@ class BinderWrapperImpl @Inject constructor(
 
 
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
-        val res = binderProvider.getAsync().signDataDetachedAsync(data, ParcelUuid(identity.fingerprint))
-        return registerResultByteArray(res)
+        val binder = binderProvider.getAsync()
+
+        return suspendCoroutine { c ->
+            binder.signDataDetachedAsync(data, ParcelUuid(identity.fingerprint), object: ByteArrayCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onData(data: ByteArray) {
+                    c.resume(data)
+                }
+
+            })
+        }
+
     }
 
     override suspend fun getIdentities(): List<Identity> {
@@ -127,8 +142,19 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun getScatterMessages(application: String): List<ScatterMessage> {
-        val res = binderProvider.getAsync().getByApplicationAsync(application)
-        return registerResultParcelableArray(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.getByApplicationAsync(application, object: ScatterMessageCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onScatterMessage(message: MutableList<ScatterMessage>) {
+                    c.resume(message)
+                }
+
+            })
+        }
     }
 
 
@@ -137,8 +163,19 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage> {
-        val res = binderProvider.getAsync().getByApplicationDateAsync(application, start.time, end.time)
-        return registerResultParcelableArray(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.getByApplicationDateAsync(application, start.time, end.time, object: ScatterMessageCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onScatterMessage(message: MutableList<ScatterMessage>) {
+                    c.resume(message)
+                }
+
+            })
+        }
     }
 
     @ExperimentalCoroutinesApi
@@ -182,28 +219,83 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun sendMessage(message: ScatterMessage) {
-        val res = binderProvider.getAsync().sendMessageAsync(message)
-        return registerResultUnit(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.sendMessageAsync(message, object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>) {
-        val res = binderProvider.getAsync().sendMessagesAsync(messages)
-        return registerResultUnit(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.sendMessagesAsync(messages, object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: UUID) {
-        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, ParcelUuid(identity))
-        return registerResultUnit(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.sendAndSignMessageAsync(message, ParcelUuid(identity), object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: UUID) {
-        val res = binderProvider.getAsync().sendAndSignMessagesAsync(messages, ParcelUuid(identity))
-        return registerResultUnit(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.sendAndSignMessagesAsync(messages, ParcelUuid(identity), object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun sendMessage(message: ScatterMessage, identity: Identity) {
-        val res = binderProvider.getAsync().sendAndSignMessageAsync(message, ParcelUuid(identity.fingerprint))
-        return registerResultUnit(res)
+        val binder = binderProvider.getAsync()
+        return suspendCoroutine { c ->
+            binder.sendAndSignMessageAsync(message, ParcelUuid(identity.fingerprint), object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun getPackages(): List<String> {
