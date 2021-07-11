@@ -52,7 +52,7 @@ open class ScatterMessage private constructor(
             extension = parcel.readString()!!,
             mime =  parcel.readString()!!,
             filename =  parcel.readString(),
-            fileDescriptor = parcel.readFileDescriptor(),
+            fileDescriptor = parcel.readParcelable(ParcelFileDescriptor::class.java.classLoader),
             toDisk = boolConvert(parcel.readInt()),
             sendDate = Date(parcel.readLong()),
             receiveDate = Date(parcel.readLong()),
@@ -72,7 +72,7 @@ open class ScatterMessage private constructor(
         parcel.writeString(extension)
         parcel.writeString(mime)
         parcel.writeString(filename)
-        parcel.writeFileDescriptor(fileDescriptor!!.fileDescriptor)
+        parcel.writeParcelable(fileDescriptor, i)
         parcel.writeInt(boolConvert(toDisk))
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
