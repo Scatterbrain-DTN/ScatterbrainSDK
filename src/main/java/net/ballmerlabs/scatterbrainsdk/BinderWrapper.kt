@@ -33,7 +33,7 @@ interface BinderWrapper {
     suspend fun getPackages(): List<String>
     fun register()
     fun unregister()
-    fun isConnected(): Boolean
+    suspend fun isConnected(): Boolean
     companion object {
         const val TAG = "BinderWrapper"
         const val BIND_ACTION = "net.ballmerlabs.uscatterbrain.ScatterRoutingService.BIND"

@@ -2,6 +2,9 @@
 package net.ballmerlabs.scatterbrainsdk;
 import net.ballmerlabs.scatterbrainsdk.ScatterMessage;
 import net.ballmerlabs.scatterbrainsdk.Identity;
+import net.ballmerlabs.scatterbrainsdk.UnitCallback;
+import net.ballmerlabs.scatterbrainsdk.ScatterMessageCallback;
+import net.ballmerlabs.scatterbrainsdk.ByteArrayCallback;
 
 interface ScatterbrainAPI {
 
@@ -17,27 +20,27 @@ interface ScatterbrainAPI {
 
     Identity getIdentityByFingerprint(in ParcelUuid fingerprint);
 
-    void sendMessage(in ScatterMessage message);
+    oneway void sendMessage(in ScatterMessage message);
 
-    void sendAndSignMessage(in ScatterMessage message, in ParcelUuid identity);
+    oneway void sendAndSignMessage(in ScatterMessage message, in ParcelUuid identity);
 
     byte[] signDataDetached(in byte[] data, in ParcelUuid identity);
 
-    void sendMessages(in List<ScatterMessage> messages);
+    oneway void sendMessages(in List<ScatterMessage> messages);
 
-    void startDiscovery();
+    oneway void startDiscovery();
 
-    void stopDiscovery();
+    oneway void stopDiscovery();
 
-    void startPassive();
+    oneway void startPassive();
 
-    void stopPassive();
+    oneway void stopPassive();
 
     Identity generateIdentity(in String name);
 
     boolean removeIdentity(in ParcelUuid identity);
 
-    void authorizeApp(in ParcelUuid identity, in String packagename);
+    oneway void authorizeApp(in ParcelUuid identity, in String packagename);
 
     void deauthorizeApp(in ParcelUuid identity, in String packagename);
 
@@ -51,21 +54,24 @@ interface ScatterbrainAPI {
 
     boolean isPassive();
 
-    void clearDatastore();
+    oneway void clearDatastore();
 
 
     // Nonblocking
-    int signDataDetachedAsync(in byte[] data, in ParcelUuid identity);
 
-    int sendMessagesAsync(in List<ScatterMessage> messages);
+    oneway void ping(UnitCallback callback);
 
-    int sendMessageAsync(in ScatterMessage message);
+    oneway void signDataDetachedAsync(in byte[] data, in ParcelUuid identity, ByteArrayCallback callback);
 
-    int sendAndSignMessageAsync(in ScatterMessage message, in ParcelUuid identity);
+    oneway void sendMessagesAsync(in List<ScatterMessage> messages, UnitCallback callback);
 
-    int sendAndSignMessagesAsync(in List<ScatterMessage> message, in ParcelUuid identity);
+    oneway void sendMessageAsync(in ScatterMessage message, UnitCallback callback);
 
-    int getByApplicationAsync(String application);
+    oneway void sendAndSignMessageAsync(in ScatterMessage message, in ParcelUuid identity, UnitCallback callback);
 
-    int getByApplicationDateAsync(String application, long startDate, long endDate);
+    oneway void sendAndSignMessagesAsync(in List<ScatterMessage> message, in ParcelUuid identity, UnitCallback callback);
+
+    oneway void getByApplicationAsync(in String application, in ScatterMessageCallback callback);
+
+    oneway void getByApplicationDateAsync(in String application, long startDate, long endDate, ScatterMessageCallback callback);
 }
