@@ -7,7 +7,9 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
@@ -63,18 +65,24 @@ class BinderProviderImpl @Inject constructor(
         bindCallbackSet.remove(c)
     }
 
-    private suspend fun bindServiceWithoutTimeout(): Unit = suspendCoroutine { ret ->
+    private suspend fun bindServiceWithoutTimeout(): Unit = suspendCancellableCoroutine { ret ->
         if (binder == null) {
-            registerCallback { b ->
-                if (b == null || b == false) ret.resumeWithException(IllegalStateException("failed to connect"))
-                ret.resume(Unit)
+            val call: (v: Boolean?) -> Unit = { b ->
+                if (b == null || b == false)
+                    ret.resumeWithException(IllegalStateException("failed to connect"))
+                else
+                    ret.resume(Unit)
             }
+            registerCallback(call)
             val bindIntent = Intent(BinderWrapper.BIND_ACTION)
             bindIntent.`package` = BinderWrapper.BIND_PACKAGE
             context.bindService(bindIntent, callback, 0)
+            ret.invokeOnCancellation { unregisterCallback(call) }
+
         } else {
             ret.resume(Unit)
         }
+
     }
 
 
