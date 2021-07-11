@@ -4,5 +4,5 @@ import net.ballmerlabs.scatterbrainsdk.Identity;
 
 interface IdentityCallback {
     void onError(in String error);
-    void onIdentity(in Identity identity);
+    void onIdentity(in List<Identity> identity);
 }

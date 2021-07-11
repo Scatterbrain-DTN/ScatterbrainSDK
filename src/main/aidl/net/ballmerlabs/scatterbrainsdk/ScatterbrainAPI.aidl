@@ -5,6 +5,7 @@ import net.ballmerlabs.scatterbrainsdk.Identity;
 import net.ballmerlabs.scatterbrainsdk.UnitCallback;
 import net.ballmerlabs.scatterbrainsdk.ScatterMessageCallback;
 import net.ballmerlabs.scatterbrainsdk.ByteArrayCallback;
+import net.ballmerlabs.scatterbrainsdk.IdentityCallback;
 
 interface ScatterbrainAPI {
 
@@ -36,8 +37,6 @@ interface ScatterbrainAPI {
 
     oneway void stopPassive();
 
-    Identity generateIdentity(in String name);
-
     boolean removeIdentity(in ParcelUuid identity);
 
     oneway void authorizeApp(in ParcelUuid identity, in String packagename);
@@ -58,6 +57,8 @@ interface ScatterbrainAPI {
 
 
     // Nonblocking
+
+    oneway void generateIdentity(in String name, IdentityCallback callback);
 
     oneway void ping(UnitCallback callback);
 

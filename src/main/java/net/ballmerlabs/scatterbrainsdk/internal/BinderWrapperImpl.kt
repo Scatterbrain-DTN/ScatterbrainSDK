@@ -195,7 +195,23 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun generateIdentity(name: String): Identity {
-        return binderProvider.getAsync().generateIdentity(name)
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c ->
+            binder.generateIdentity(name, object: IdentityCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onIdentity(identity: MutableList<Identity>) {
+                    if (identity.size != 1) {
+                        c.resumeWithException(IllegalStateException("wrong identity count"))
+                    } else {
+                        c.resume(identity[0])
+                    }
+                }
+
+            })
+        }
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
