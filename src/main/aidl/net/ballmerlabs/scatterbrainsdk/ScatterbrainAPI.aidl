@@ -58,6 +58,9 @@ interface ScatterbrainAPI {
 
 
     // Nonblocking
+
+    oneway void ping(UnitCallback callback);
+
     oneway void signDataDetachedAsync(in byte[] data, in ParcelUuid identity, ByteArrayCallback callback);
 
     oneway void sendMessagesAsync(in List<ScatterMessage> messages, UnitCallback callback);

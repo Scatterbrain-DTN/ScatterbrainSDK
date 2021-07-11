@@ -11,8 +11,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
+import java.lang.IllegalStateException
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BinderProviderImpl @Inject constructor(
@@ -64,7 +66,7 @@ class BinderProviderImpl @Inject constructor(
     private suspend fun bindServiceWithoutTimeout(): Unit = suspendCoroutine { ret ->
         if (binder == null) {
             registerCallback { b ->
-                if (b == null || b == false) throw IllegalStateException("failed to bind service")
+                if (b == null || b == false) ret.resumeWithException(IllegalStateException("failed to connect"))
                 ret.resume(Unit)
             }
             val bindIntent = Intent(BinderWrapper.BIND_ACTION)
@@ -77,7 +79,7 @@ class BinderProviderImpl @Inject constructor(
 
 
     private suspend fun bindService(): ScatterbrainAPI {
-        withTimeout(5000L) {
+        withTimeout(1000L) {
             bindServiceWithoutTimeout()
         }
         return binder!!

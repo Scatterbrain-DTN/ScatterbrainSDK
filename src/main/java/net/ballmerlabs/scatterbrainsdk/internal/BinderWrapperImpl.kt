@@ -334,14 +334,25 @@ class BinderWrapperImpl @Inject constructor(
         broadcastReceiver.unregister()
     }
 
-    override fun isConnected(): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in manager.getRunningServices(1)) {
-            if ("net.ballmerlabs.uscatterbrain.ScatterRoutingService" == service.service.className) {
-                return true
+    override suspend fun isConnected(): Boolean {
+        try {
+            val binder = binderProvider.getAsync()
+            return suspendCoroutine { c ->
+                binder.ping(object : UnitCallback.Stub() {
+                    override fun onError(error: String?) {
+                        c.resume(false)
+                    }
+
+                    override fun onComplete() {
+                        c.resume(true)
+                    }
+
+                })
             }
         }
-        return false
+        catch (exception: Exception) {
+            return false
+        }
     }
 
     init {
