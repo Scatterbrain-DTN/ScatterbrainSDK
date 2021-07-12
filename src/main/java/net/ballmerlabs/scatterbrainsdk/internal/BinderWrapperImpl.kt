@@ -343,16 +343,17 @@ class BinderWrapperImpl @Inject constructor(
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {
         return sendMessage(messages, identity.fingerprint)
     }
-    override suspend fun removeIdentity(identity: Identity) {
+
+    override suspend fun removeIdentity(identity: Identity): Boolean {
         val binder = binderProvider.getAsync()
         return suspendCancellableCoroutine { c->
-            binder.removeIdentity(ParcelUuid(identity.fingerprint), object: UnitCallback.Stub() {
+            binder.removeIdentity(ParcelUuid(identity.fingerprint), object: BoolCallback.Stub() {
                 override fun onError(error: String) {
                     c.resumeWithException(IllegalStateException(error))
                 }
 
-                override fun onComplete() {
-                    c.resume(Unit)
+                override fun onResult(result: Boolean) {
+                    c.resume(result)
                 }
 
             })

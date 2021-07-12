@@ -18,7 +18,7 @@ interface BinderWrapper {
     suspend fun getPermissions(identity: Identity): List<NamePackage>
     suspend fun authorizeIdentity(identity: Identity, packageName: String)
     suspend fun deauthorizeIdentity(identity: Identity, packageName: String)
-    suspend fun removeIdentity(identity: Identity)
+    suspend fun removeIdentity(identity: Identity): Boolean
     suspend fun sign(identity: Identity, data: ByteArray): ByteArray
     suspend fun startDiscover()
     suspend fun stopDiscover()
