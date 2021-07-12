@@ -6,6 +6,7 @@ import net.ballmerlabs.scatterbrainsdk.UnitCallback;
 import net.ballmerlabs.scatterbrainsdk.ScatterMessageCallback;
 import net.ballmerlabs.scatterbrainsdk.ByteArrayCallback;
 import net.ballmerlabs.scatterbrainsdk.IdentityCallback;
+import net.ballmerlabs.scatterbrainsdk.StringCallback;
 
 interface ScatterbrainAPI {
 
@@ -37,14 +38,6 @@ interface ScatterbrainAPI {
 
     oneway void stopPassive();
 
-    boolean removeIdentity(in ParcelUuid identity);
-
-    oneway void authorizeApp(in ParcelUuid identity, in String packagename);
-
-    void deauthorizeApp(in ParcelUuid identity, in String packagename);
-
-    String[] getAppPermissions(in ParcelUuid identity);
-
     List<String> getKnownPackages();
 
     int getKnownPackagesAsync();
@@ -57,6 +50,14 @@ interface ScatterbrainAPI {
 
 
     // Nonblocking
+
+    oneway void getAppPermissions(in ParcelUuid identity, StringCallback callback);
+
+    oneway void removeIdentity(in ParcelUuid identity, UnitCallback callback);
+
+    oneway void authorizeApp(in ParcelUuid identity, in String packagename, UnitCallback callback);
+
+    void deauthorizeApp(in ParcelUuid identity, in String packagename);
 
     oneway void generateIdentity(in String name, IdentityCallback callback);
 

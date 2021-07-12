@@ -10,9 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
@@ -215,7 +213,20 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
-        binderProvider.getAsync().authorizeApp(ParcelUuid(identity.fingerprint), packageName)
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c ->
+            binder.authorizeApp(ParcelUuid(identity.fingerprint), packageName, object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+
+        }
     }
 
     override suspend fun deauthorizeIdentity(identity: Identity, packageName: String) {
@@ -223,16 +234,25 @@ class BinderWrapperImpl @Inject constructor(
         binderProvider.getAsync().deauthorizeApp(ParcelUuid(identity.fingerprint), packageName)
     }
 
-    override suspend fun getPermissions(identity: Identity): Flow<List<NamePackage>> = flow {
-        val identities = binderProvider.getAsync().getAppPermissions(ParcelUuid(identity.fingerprint))
-        val result = mutableListOf<NamePackage>()
-        val pm = context.packageManager
-        for (id in identities) {
-            yield()
-            val r = pm.getApplicationInfo(id, PackageManager.GET_META_DATA)
-            result.add(NamePackage(pm.getApplicationLabel(r).toString(), r))
+    override suspend fun getPermissions(identity: Identity): List<NamePackage> {
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c ->
+            val identities = binder.getAppPermissions(ParcelUuid(identity.fingerprint), object: StringCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onString(result: MutableList<String>) {
+                    val pm = context.packageManager
+                    val packageList = result.map { id ->
+                        val r = pm.getApplicationInfo(id, PackageManager.GET_META_DATA)
+                        NamePackage(pm.getApplicationLabel(r).toString(), r)
+                    }
+                    c.resume(packageList)
+                }
+
+            })
         }
-        emit(result)
     }
 
     override suspend fun sendMessage(message: ScatterMessage) {
@@ -323,8 +343,20 @@ class BinderWrapperImpl @Inject constructor(
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {
         return sendMessage(messages, identity.fingerprint)
     }
-    override suspend fun removeIdentity(identity: Identity): Boolean {
-        return binderProvider.getAsync().removeIdentity(ParcelUuid(identity.fingerprint))
+    override suspend fun removeIdentity(identity: Identity) {
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c->
+            binder.removeIdentity(ParcelUuid(identity.fingerprint), object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
     }
 
     override suspend fun startDiscover() {
