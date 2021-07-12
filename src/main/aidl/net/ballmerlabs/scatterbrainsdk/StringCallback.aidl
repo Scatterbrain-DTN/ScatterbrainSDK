@@ -2,6 +2,6 @@
 package net.ballmerlabs.scatterbrainsdk;
 
 interface StringCallback {
-   void onError(in String error);
-   void onString(in List<String> result);
+   oneway void onError(in String error);
+   oneway void onString(in List<String> result);
 }

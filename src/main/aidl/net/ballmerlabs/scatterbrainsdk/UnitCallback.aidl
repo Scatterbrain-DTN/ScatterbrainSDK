@@ -2,6 +2,6 @@
 package net.ballmerlabs.scatterbrainsdk;
 
 interface UnitCallback {
-    void onError(in String error);
-    void onComplete();
+    oneway void onError(in String error);
+    oneway void onComplete();
 }

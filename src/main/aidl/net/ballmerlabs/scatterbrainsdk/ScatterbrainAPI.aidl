@@ -58,7 +58,7 @@ interface ScatterbrainAPI {
 
     oneway void authorizeApp(in ParcelUuid identity, in String packagename, UnitCallback callback);
 
-    void deauthorizeApp(in ParcelUuid identity, in String packagename);
+    oneway void deauthorizeApp(in ParcelUuid identity, in String packagename);
 
     oneway void generateIdentity(in String name, IdentityCallback callback);
 
