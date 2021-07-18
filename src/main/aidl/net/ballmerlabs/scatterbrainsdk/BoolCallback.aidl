@@ -1,9 +1,9 @@
-// ByteArrayCallback.aidl
+// BoolCallback.aidl
 package net.ballmerlabs.scatterbrainsdk;
 
 // Declare any non-default types here with import statements
 
-interface ByteArrayCallback {
+interface BoolCallback {
     oneway void onError(in String error);
-    oneway void onData(in byte[] data);
+    oneway void onResult(boolean result);
 }

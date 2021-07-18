@@ -9,13 +9,14 @@ interface BinderWrapper {
     suspend fun stopService()
     suspend fun unbindService()
     suspend fun getIdentities(): List<Identity>
+    suspend fun getIdentity(fingerprint: UUID): Identity?
     suspend fun getScatterMessages(application: String): List<ScatterMessage>
     suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage>
     suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage>
     suspend fun observeIdentities(): Flow<List<Identity>>
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
     suspend fun generateIdentity(name: String): Identity
-    suspend fun getPermissions(identity: Identity): Flow<List<NamePackage>>
+    suspend fun getPermissions(identity: Identity): List<NamePackage>
     suspend fun authorizeIdentity(identity: Identity, packageName: String)
     suspend fun deauthorizeIdentity(identity: Identity, packageName: String)
     suspend fun removeIdentity(identity: Identity): Boolean
