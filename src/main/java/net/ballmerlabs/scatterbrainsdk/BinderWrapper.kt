@@ -9,6 +9,7 @@ interface BinderWrapper {
     suspend fun stopService()
     suspend fun unbindService()
     suspend fun getIdentities(): List<Identity>
+    suspend fun getIdentity(fingerprint: UUID): Identity?
     suspend fun getScatterMessages(application: String): List<ScatterMessage>
     suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage>
     suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage>

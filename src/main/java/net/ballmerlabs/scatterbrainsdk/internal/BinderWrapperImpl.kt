@@ -96,6 +96,27 @@ class BinderWrapperImpl @Inject constructor(
         broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
     }
 
+    override suspend fun getIdentity(fingerprint: UUID): Identity? {
+        val binder = binderProvider.getAsync()
+
+        return suspendCancellableCoroutine { c ->
+            binder.getIdentity(ParcelUuid(fingerprint), object: IdentityCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onIdentity(identity: MutableList<Identity>) {
+                    if (identity.size > 1) {
+                        c.resumeWithException(IllegalStateException("fingerprint collision. Im reaally sorry"))
+                    } else {
+                        c.resume(identity.firstOrNull())
+                    }
+                }
+
+            })
+        }
+    }
+
 
     override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
         val binder = binderProvider.getAsync()

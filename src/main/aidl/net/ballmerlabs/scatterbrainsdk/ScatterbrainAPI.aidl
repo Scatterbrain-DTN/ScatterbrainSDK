@@ -52,6 +52,8 @@ interface ScatterbrainAPI {
 
     // Nonblocking
 
+    oneway void getIdentity(in ParcelUuid fingerprint, IdentityCallback callback);
+
     oneway void getAppPermissions(in ParcelUuid identity, StringCallback callback);
 
     oneway void removeIdentity(in ParcelUuid identity, BoolCallback callback);
