@@ -68,6 +68,8 @@ interface ScatterbrainAPI {
 
     oneway void signDataDetachedAsync(in byte[] data, in ParcelUuid identity, ByteArrayCallback callback);
 
+    oneway void verifyDataAsync(in byte[] data, in byte[] sig, in ParcelUuid identiy, BoolCallback callback);
+
     oneway void sendMessagesAsync(in List<ScatterMessage> messages, UnitCallback callback);
 
     oneway void sendMessageAsync(in ScatterMessage message, UnitCallback callback);

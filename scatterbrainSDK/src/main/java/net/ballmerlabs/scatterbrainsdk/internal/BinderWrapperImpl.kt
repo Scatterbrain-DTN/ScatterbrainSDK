@@ -136,6 +136,23 @@ class BinderWrapperImpl @Inject constructor(
 
     }
 
+    override suspend fun verify(identity: Identity, data: ByteArray, sig: ByteArray): Boolean {
+        val binder = binderProvider.getAsync()
+
+        return suspendCancellableCoroutine { c ->
+            binder.verifyDataAsync(data, sig, ParcelUuid(identity.fingerprint), object: BoolCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onResult(result: Boolean) {
+                    c.resume(result)
+                }
+
+            })
+        }
+    }
+
     override suspend fun getIdentities(): List<Identity> {
         return binderProvider.getAsync().identities
     }
