@@ -5,35 +5,236 @@ import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 interface BinderWrapper {
+    /**
+     * Starts the scatterbrain router if stopped. Requires
+     * net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun startService()
+
+    /**
+     * Stops the scatterbrain router if started. Requires
+     * net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun stopService()
+
+    /**
+     * disconnects from the binder interface
+     */
     suspend fun unbindService()
+
+    /**
+     * Gets a list of all known identities.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @return list of Identity objects
+     */
     suspend fun getIdentities(): List<Identity>
+
+    /**
+     * Gets a single identity by fingerprint.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @return identity, null if fingerprint not found
+     */
     suspend fun getIdentity(fingerprint: UUID): Identity?
+
+    /**
+     * returns a list of all stored message objects for a given application
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param application application identifier
+     * @return list of message objects for application
+     */
     suspend fun getScatterMessages(application: String): List<ScatterMessage>
+
+    /**
+     * returns a list of all stored messages for a given application after a given date.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param application application identifier
+     * @param since restrict messages after this date
+     * @return list of messages objects
+     */
     suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage>
+
+    /**
+     * returns a list of all stored messages for a given application between two dates.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param application application identifier
+     * @param start start date
+     * @param end end data
+     * @return list of message objects
+     */
     suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage>
+
+    /**
+     * returns an asynchronous flow of identities received after this function is called
+     * in real time.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @return async flow of identities
+     */
     suspend fun observeIdentities(): Flow<List<Identity>>
+
+    /**
+     * returns an asynchronous flow of all messages received after this functions is called
+     * filtered by a given application identifier.
+     * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param application application idenifier
+     * @return async flow of messages
+     */
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
+
+    /**
+     * generates and returns a scatterbrain identity with ACLs matching the calling application only
+     * If additional applications need access to this identity they can be assigned via the Scatterbrain
+     * app. This requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param name human readable name associated with identity
+     * @return handle to identity
+     */
     suspend fun generateIdentity(name: String): Identity
+
+    /**
+     * Gets a list of ACLs associated with a given identity object.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER permission
+     * and is currently not available to 3rd party applications
+     * @param identity identity object
+     * @return list of ACLs
+     */
     suspend fun getPermissions(identity: Identity): List<NamePackage>
+
+    /**
+     * Adds an ACL to an identity authorizing an app to use it.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
+     * not avilable to 3rd party applications
+     * @param identity identity object
+     * @param packageName android app package name
+     */
     suspend fun authorizeIdentity(identity: Identity, packageName: String)
+
+    /**
+     * Removes an ACL authorizing an app to use an identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
+     * not avilable to 3rd party applications
+     * @param identity identity object
+     * @param packageName android app package name
+     */
     suspend fun deauthorizeIdentity(identity: Identity, packageName: String)
+
+    /**
+     * Deletes an identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
+     * not avilable to 3rd party applications
+     * @param identity identity object
+     * @return true if identity removed
+     */
     suspend fun removeIdentity(identity: Identity): Boolean
+
+    /**
+     * Cryptographically signs data using a stored identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param identity identity object
+     * @param data bytes to sign
+     * @return detached ed25519 signature
+     */
     suspend fun sign(identity: Identity, data: ByteArray): ByteArray
+
+    /**
+     * Starts active discovery using default transport modules
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun startDiscover()
+
+    /**
+     * Stops active discovery
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun stopDiscover()
+
+    /**
+     * Starts passive discovery using the default radio module. This usually uses less power
+     * than active discovery for most transport modules but may skip peers that are also in
+     * passive mode
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun startPassive()
+
+    /**
+     * Stops passive discovery
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ADMIN permission
+     */
     suspend fun stopPassive()
+
+    /**
+     * Enqueues a Scatterbrain message to the datastore. The messages will be sent as soon
+     * as a peer is available
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param message message to send
+     */
     suspend fun sendMessage(message: ScatterMessage)
+
+    /**
+     * Enqueues a message to the datastore and signs it with a given identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * but the calling package must have accesss to the identity
+     * @param message message to send
+     * @param identity identity to sign with
+     */
     suspend fun sendMessage(message: ScatterMessage, identity: Identity)
+
+    /**
+     * Enqueues a message to the datastore and signs it with a given identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * but the calling package must have accesss to the identity
+     * @param message message to send
+     * @param identity identity to sign with
+     */
     suspend fun sendMessage(message: ScatterMessage, identity: UUID)
+
+    /**
+     * Enqueues a list of messages to the datastore and signs it with a given identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * but the calling package must have accesss to the identity
+     * @param messages messages to send
+     * @param identity identity to sign with
+     */
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: UUID)
+
+    /**
+     * Enqueues mutiple Scatterbrain messages to the datastore. The messages will be sent as soon
+     * as a peer is available
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * @param message message to send
+     */
     suspend fun sendMessage(messages: List<ScatterMessage>)
+
+    /**
+     * Enqueues a list of messages to the datastore and signs it with a given identity.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
+     * but the calling package must have accesss to the identity
+     * @param messages messages to send
+     * @param identity identity to sign with
+     */
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity)
+
+    /**
+     * Gets a list of packages declaring a Scatterbrain compatible BroadcastReceiver.
+     * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER permission
+     * and is currently not available to 3rd party applications
+     * @return list of package names
+     */
     suspend fun getPackages(): List<String>
+
+    /**
+     * Uegisters the internal BroadcastReceiver for Scatterbrain events.
+     * This must be called to use the Scatterbrain SDK
+     */
     fun register()
+
+    /**
+     * Unregisters Scatterbrain broadcast receivers
+     */
     fun unregister()
+
+    /**
+     * Checks if this SDK is connected to a running Scatterbrain router
+     * @return true if connected
+     */
     suspend fun isConnected(): Boolean
     companion object {
         const val TAG = "BinderWrapper"
