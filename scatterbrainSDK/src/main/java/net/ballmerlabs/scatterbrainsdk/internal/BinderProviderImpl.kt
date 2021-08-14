@@ -47,10 +47,6 @@ class BinderProviderImpl @Inject constructor(
         }
     }
 
-    fun registerCallback() {
-        bindCallbackSet.forEach { registerCallback(it) }
-    }
-
     override fun unregisterCallback() {
         bindCallbackSet.forEach { unregisterCallback(it) }
     }
