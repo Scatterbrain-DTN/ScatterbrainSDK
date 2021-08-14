@@ -9,7 +9,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
+import net.ballmerlabs.scatterbrainsdk.HandshakeResult
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.*
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import java.util.concurrent.ConcurrentHashMap

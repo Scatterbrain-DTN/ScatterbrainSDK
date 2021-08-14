@@ -1,4 +1,4 @@
-package net.ballmerlabs.scatterbrainsdk.internal
+package net.ballmerlabs.scatterbrainsdk
 
 import android.os.Parcel
 import android.os.Parcelable
