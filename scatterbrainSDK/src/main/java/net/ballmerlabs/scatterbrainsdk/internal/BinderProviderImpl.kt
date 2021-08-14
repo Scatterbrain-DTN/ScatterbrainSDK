@@ -10,6 +10,7 @@ import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
+import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
 import javax.inject.Inject

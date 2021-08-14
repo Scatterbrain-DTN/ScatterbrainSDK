@@ -1,4 +1,4 @@
-package net.ballmerlabs.scatterbrainsdk.internal
+package net.ballmerlabs.scatterbrainsdk
 
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
 import javax.inject.Provider

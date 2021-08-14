@@ -1,6 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.os.IBinder
+import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
 
 class MockBinderProvider(
