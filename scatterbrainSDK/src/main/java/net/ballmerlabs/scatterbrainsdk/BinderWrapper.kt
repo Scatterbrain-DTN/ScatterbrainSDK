@@ -4,6 +4,11 @@ import android.content.pm.ApplicationInfo
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
+/**
+ * Represents a connection to the Scatterbrain API. This class should only be injected by
+ * dagger only. By default this class is created as a singleton, as there is little value
+ * of concurrent connections to Scatterbrain
+ */
 interface BinderWrapper {
     /**
      * Starts the scatterbrain router if stopped. Requires
@@ -209,7 +214,7 @@ interface BinderWrapper {
      * Enqueues mutiple Scatterbrain messages to the datastore. The messages will be sent as soon
      * as a peer is available
      * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
-     * @param message message to send
+     * @param messages message to send
      */
     suspend fun sendMessage(messages: List<ScatterMessage>)
 

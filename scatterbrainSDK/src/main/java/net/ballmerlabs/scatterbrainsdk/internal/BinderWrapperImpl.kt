@@ -27,7 +27,7 @@ import kotlin.coroutines.resumeWithException
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
         private val broadcastReceiver: ScatterbrainBroadcastReceiver,
-        val binderProvider: BinderProvider
+        private val binderProvider: BinderProvider
 ) : BinderWrapper  {
     
     override suspend fun startService() {
@@ -275,7 +275,7 @@ class BinderWrapperImpl @Inject constructor(
     override suspend fun getPermissions(identity: Identity): List<NamePackage> {
         val binder = binderProvider.getAsync()
         return suspendCancellableCoroutine { c ->
-            val identities = binder.getAppPermissions(ParcelUuid(identity.fingerprint), object: StringCallback.Stub() {
+            binder.getAppPermissions(ParcelUuid(identity.fingerprint), object: StringCallback.Stub() {
                 override fun onError(error: String) {
                     c.resumeWithException(IllegalStateException(error))
                 }

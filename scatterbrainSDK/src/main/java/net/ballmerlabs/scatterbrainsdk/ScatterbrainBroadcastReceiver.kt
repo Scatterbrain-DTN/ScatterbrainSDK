@@ -1,6 +1,5 @@
 package net.ballmerlabs.scatterbrainsdk
 
-import android.os.Bundle
 import net.ballmerlabs.scatterbrainsdk.internal.AsyncCallback
 import net.ballmerlabs.scatterbrainsdk.internal.HandshakeResult
 

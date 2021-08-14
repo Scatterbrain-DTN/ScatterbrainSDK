@@ -238,7 +238,7 @@ class ScatterMessage private constructor(
     companion object {
         @JvmField
         val CREATOR: Parcelable.Creator<ScatterMessage?> = object : Parcelable.Creator<ScatterMessage?> {
-            override fun createFromParcel(`in`: Parcel): ScatterMessage? {
+            override fun createFromParcel(`in`: Parcel): ScatterMessage {
                 return ScatterMessage(`in`)
             }
 

@@ -4,9 +4,9 @@ import android.os.IBinder
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
 
 class MockBinderProvider(
-        val iBinder: IBinder
+        private val iBinder: IBinder
 ) : BinderProvider {
-    val binder = ScatterbrainAPI.Stub.asInterface(iBinder)
+    val binder = ScatterbrainAPI.Stub.asInterface(iBinder)!!
     override suspend fun getAsync(): ScatterbrainAPI {
         return binder
     }
