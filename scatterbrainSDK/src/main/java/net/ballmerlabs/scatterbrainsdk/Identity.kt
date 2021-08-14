@@ -5,13 +5,26 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import java.util.*
 
+/**
+ * A handle to a cryptographic identity stored in the Scatterbrain
+ * router. This class contains all identity metadata except for the
+ * private key (for security reasons). This class has no public constructor
+ * and is only returned by Scatterbrain api functions
+ *
+ * @property publicKey ed25519 public key used by Scatterbrain
+ * @property extraKeys additional user defined keys or metadata
+ * @property sig ed25519 signature for this identity
+ * @property fingerprint unique identifier for this identity
+ * @property name user-defined name
+ * @property isOwned true if this identity has a private key
+ */
 open class Identity : Parcelable {
     val extraKeys: Map<String, ByteArray>
     val publicKey: ByteArray
     val name: String
     val sig: ByteArray
     val fingerprint: UUID
-    var hasPrivateKey: Boolean
+    val isOwned: Boolean
 
     protected constructor(
             map: Map<String, ByteArray>,
@@ -26,7 +39,7 @@ open class Identity : Parcelable {
         this.name = name
         this.sig = sig
         this.fingerprint = fingerprint
-        this.hasPrivateKey = hasPrivateKey
+        this.isOwned = hasPrivateKey
     }
 
     private fun interface ParcelWriter<T> {
@@ -53,7 +66,7 @@ open class Identity : Parcelable {
         inParcel.readByteArray(sig)
         val uuid = inParcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)
         fingerprint = uuid!!.uuid
-        hasPrivateKey = hasKey(inParcel.readByte().toInt())
+        isOwned = hasKey(inParcel.readByte().toInt())
     }
 
     override fun describeContents(): Int {
@@ -70,7 +83,7 @@ open class Identity : Parcelable {
         parcel.writeInt(sig.size)
         parcel.writeByteArray(sig)
         parcel.writeParcelable(ParcelUuid(fingerprint), i)
-        parcel.writeByte(hasKey(hasPrivateKey))
+        parcel.writeByte(hasKey(isOwned))
     }
 
     companion object {
