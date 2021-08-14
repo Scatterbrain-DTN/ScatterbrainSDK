@@ -1,166 +1,125 @@
-package net.ballmerlabs.scatterbrainsdk;
+package net.ballmerlabs.scatterbrainsdk
 
-import android.os.Parcel;
-import android.os.ParcelUuid;
-import android.os.Parcelable;
+import android.os.Parcel
+import android.os.ParcelUuid
+import android.os.Parcelable
+import java.util.*
 
-import androidx.annotation.NonNull;
+open class Identity : Parcelable {
+    val extraKeys: Map<String, ByteArray>
+    val publicKey: ByteArray
+    val name: String
+    val sig: ByteArray
+    val fingerprint: UUID
+    var hasPrivateKey: Boolean
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-public class Identity implements Parcelable {
-
-    protected final Map<String, byte[]> mPubKeymap;
-    protected final byte[] mScatterbrainPubKey;
-    protected final String givenname;
-    protected final byte[] sig;
-    protected final UUID fingerprint;
-    protected boolean hasPrivateKey;
-
-    protected Identity(
-            Map<String, byte[]> map, 
-            byte[] pub, 
-            String name, 
-            byte[] sig, 
-            UUID fingerprint,
-            boolean hasPrivateKey
+    protected constructor(
+            map: Map<String, ByteArray>,
+            pub: ByteArray,
+            name: String,
+            sig: ByteArray,
+            fingerprint: UUID,
+            hasPrivateKey: Boolean
     ) {
-        this.mPubKeymap = map;
-        this.mScatterbrainPubKey = pub;
-        this.givenname = name;
-        this.sig = sig;
-        this.fingerprint = fingerprint;
-        this.hasPrivateKey = hasPrivateKey;
+        extraKeys = map
+        publicKey = pub
+        this.name = name
+        this.sig = sig
+        this.fingerprint = fingerprint
+        this.hasPrivateKey = hasPrivateKey
     }
 
-    @FunctionalInterface
-    private interface ParcelWriter<T> {
-        void writeToParcel(@NonNull final T value,
-                           @NonNull final Parcel parcel, final int flags);
+    private fun interface ParcelWriter<T> {
+        fun writeToParcel(
+                value: T,
+                parcel: Parcel, flags: Int
+        )
     }
 
-    @FunctionalInterface
-    private interface ParcelReader<T> {
-        T readFromParcel(@NonNull final Parcel parcel);
+    private fun interface ParcelReader<T> {
+        fun readFromParcel(parcel: Parcel): T
     }
 
-    private static <K, V> void writeParcelableMap(
-            @NonNull final Map<K, V> map,
-            @NonNull final Parcel parcel,
-            final int flags,
-            @NonNull final ParcelWriter<Map.Entry<K, V>> parcelWriter) {
-        parcel.writeInt(map.size());
-
-        for (final Map.Entry<K, V> e : map.entrySet()) {
-            parcelWriter.writeToParcel(e, parcel, flags);
+    protected constructor(inParcel: Parcel) {
+        extraKeys = readParcelableMap(inParcel) { parcel ->
+            val len = parcel.readInt()
+            val key = ByteArray(len)
+            parcel.readByteArray(key)
+            AbstractMap.SimpleEntry(parcel.readString()!!, key)
         }
+        publicKey = extraKeys[ScatterbrainApi.PROTOBUF_PRIVKEY_KEY]!!
+        name = inParcel.readString()!!
+        sig = ByteArray(inParcel.readInt())
+        inParcel.readByteArray(sig)
+        val uuid = inParcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)
+        fingerprint = uuid!!.uuid
+        hasPrivateKey = hasKey(inParcel.readByte().toInt())
     }
 
-    private static <K, V> Map<K, V> readParcelableMap(
-            @NonNull final Parcel parcel,
-            @NonNull final ParcelReader<Map.Entry<K, V>> parcelReader) {
-        int size = parcel.readInt();
-        final Map<K, V> map = new HashMap<>(size);
+    override fun describeContents(): Int {
+        return 0
+    }
 
-        for (int i = 0; i < size; i++) {
-            final Map.Entry<K, V> value = parcelReader.readFromParcel(parcel);
-            map.put(value.getKey(), value.getValue());
+    override fun writeToParcel(parcel: Parcel, i: Int) {
+        writeParcelableMap(extraKeys, parcel, i) { mapentry, p, _ ->
+            p.writeInt(mapentry.value.size)
+            p.writeByteArray(mapentry.value)
+            p.writeString(mapentry.key)
         }
-        return map;
+        parcel.writeString(name)
+        parcel.writeInt(sig.size)
+        parcel.writeByteArray(sig)
+        parcel.writeParcelable(ParcelUuid(fingerprint), i)
+        parcel.writeByte(hasKey(hasPrivateKey))
     }
 
-    protected Identity(Parcel in) {
-        mPubKeymap = readParcelableMap(in, parcel -> {
-            final int len = parcel.readInt();
-            final byte[] key = new byte[len];
-            parcel.readByteArray(key);
-            return new AbstractMap.SimpleEntry<>(parcel.readString(), key);
-        });
-        mScatterbrainPubKey = mPubKeymap.get(ScatterbrainApi.PROTOBUF_PRIVKEY_KEY);
-        givenname = in.readString();
-        sig = new byte[in.readInt()];
-        in.readByteArray(sig);
-        ParcelUuid uuid = in.readParcelable(ParcelUuid.class.getClassLoader());
-        fingerprint = uuid.getUuid();
-        hasPrivateKey = hasKey(in.readByte());
-    }
-
-    public static final Creator<Identity> CREATOR = new Creator<Identity>() {
-        @Override
-        public Identity createFromParcel(Parcel in) {
-            return new Identity(in);
+    companion object {
+        private fun <K, V> writeParcelableMap(
+                map: Map<K, V>,
+                parcel: Parcel,
+                flags: Int,
+                parcelWriter: ParcelWriter<Map.Entry<K, V>>
+        ) {
+            parcel.writeInt(map.size)
+            for (e in map.entries) {
+                parcelWriter.writeToParcel(e, parcel, flags)
+            }
         }
 
-        @Override
-        public Identity[] newArray(int size) {
-            return new Identity[size];
+        private fun <K, V> readParcelableMap(
+                parcel: Parcel,
+                parcelReader: ParcelReader<Map.Entry<K, V>>
+        ): Map<K, V> {
+            val size = parcel.readInt()
+            val map: MutableMap<K, V> = HashMap(size)
+            for (i in 0 until size) {
+                val value = parcelReader.readFromParcel(parcel)
+                map[value.key] = value.value
+            }
+            return map
         }
-    };
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
+        @JvmField
+        val CREATOR: Parcelable.Creator<Identity> = object : Parcelable.Creator<Identity> {
+            override fun createFromParcel(`in`: Parcel): Identity {
+                return Identity(`in`)
+            }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        writeParcelableMap(mPubKeymap, parcel, i, (mapentry, p, __) -> {
-            p.writeInt(mapentry.getValue().length);
-            p.writeByteArray(mapentry.getValue());
-            p.writeString(mapentry.getKey());
-        });
-        parcel.writeString(givenname);
-        parcel.writeInt(sig.length);
-        parcel.writeByteArray(sig);
-        parcel.writeParcelable(new ParcelUuid(fingerprint), i);
-        parcel.writeByte(hasKey(hasPrivateKey));
-    }
-
-    public Map<String, byte[]> getmPubKeymap() {
-        return mPubKeymap;
-    }
-
-    public byte[] getmScatterbrainPubKey() {
-        return mScatterbrainPubKey;
-    }
-
-    public String getGivenname() {
-        return givenname;
-    }
-
-    public byte[] getSig() {
-        return sig;
-    }
-
-    public UUID getFingerprint() {
-        return fingerprint;
-    }
-    
-    public boolean hasPrivateKey() {
-        return hasPrivateKey;
-    }
-
-    protected void setHasPrivateKey(boolean key) {
-        this.hasPrivateKey = key;
-    }
-
-
-    private static boolean hasKey(int val) {
-        if (val == 0) {
-            return true;
-        } else {
-            return false;
+            override fun newArray(size: Int): Array<Identity?> {
+                return arrayOfNulls(size)
+            }
         }
-    }
 
-    private static byte hasKey(boolean val) {
-        if (val) {
-            return 0;
-        } else {
-            return 1;
+        private fun hasKey(`val`: Int): Boolean {
+            return `val` == 0
+        }
+
+        private fun hasKey(`val`: Boolean): Byte {
+            return if (`val`) {
+                0
+            } else {
+                1
+            }
         }
     }
 }
