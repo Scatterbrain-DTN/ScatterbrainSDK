@@ -3,6 +3,14 @@ package net.ballmerlabs.scatterbrainsdk.internal
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * Transaction statistics from a handshake with a Scatterbrain peer.
+ *
+ * @property identities number of identities transferred
+ * @property messages number of messages transferred
+ * @property stackTrace error status of the transaction
+ * @property success true if the transaction completed successfully
+ */
 open class HandshakeResult : Parcelable {
     enum class TransactionStatus {
         STATUS_SUCCESS, STATUS_FAIL
