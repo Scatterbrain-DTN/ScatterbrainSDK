@@ -106,7 +106,7 @@ interface BinderWrapper {
     /**
      * Adds an ACL to an identity authorizing an app to use it.
      * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
-     * not avilable to 3rd party applications
+     * not available to 3rd party applications
      * @param identity identity object
      * @param packageName android app package name
      */
@@ -115,7 +115,7 @@ interface BinderWrapper {
     /**
      * Removes an ACL authorizing an app to use an identity.
      * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
-     * not avilable to 3rd party applications
+     * not available to 3rd party applications
      * @param identity identity object
      * @param packageName android app package name
      */
@@ -124,7 +124,7 @@ interface BinderWrapper {
     /**
      * Deletes an identity.
      * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER and is currently
-     * not avilable to 3rd party applications
+     * not available to 3rd party applications
      * @param identity identity object
      * @return true if identity removed
      */
@@ -211,7 +211,7 @@ interface BinderWrapper {
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: UUID)
 
     /**
-     * Enqueues mutiple Scatterbrain messages to the datastore. The messages will be sent as soon
+     * Enqueues multiple Scatterbrain messages to the datastore. The messages will be sent as soon
      * as a peer is available
      * This function requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
      * @param messages message to send
@@ -236,7 +236,7 @@ interface BinderWrapper {
     suspend fun getPackages(): List<String>
 
     /**
-     * Uegisters the internal BroadcastReceiver for Scatterbrain events.
+     * Unregisters the internal BroadcastReceiver for Scatterbrain events.
      * This must be called to use the Scatterbrain SDK
      */
     fun register()
