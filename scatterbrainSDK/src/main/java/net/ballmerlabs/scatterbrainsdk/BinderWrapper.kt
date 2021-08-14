@@ -253,8 +253,13 @@ interface BinderWrapper {
     }
 }
 
-
-class NamePackage(
+/**
+ * Pair of application name and metadata
+ * @property name application mae
+ * @property info application metadata
+ * @constructor creates a NamePackage
+ */
+data class NamePackage(
         val name: String,
         val info: ApplicationInfo
 ) {
