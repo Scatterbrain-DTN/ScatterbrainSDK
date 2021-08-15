@@ -9,7 +9,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
+import net.ballmerlabs.scatterbrainsdk.HandshakeResult
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.*
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import java.util.concurrent.ConcurrentHashMap
@@ -40,7 +40,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
         coroutineScope.launch {
             when (intent.action) {
                 BROADCAST_EVENT -> {
-                    val handshakeResult = intent.getParcelableExtra<HandshakeResult>(ScatterbrainApi.EXTRA_TRANSACTION_RESULT)!!
+                    val handshakeResult = intent.getParcelableExtra<HandshakeResult>(EXTRA_TRANSACTION_RESULT)!!
                     Log.e("debug", "received handshake result")
 
 
@@ -49,10 +49,10 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                 BROADCAST_RESULT -> {
                     resultCallbackSet.forEach { (key, value) ->
                         yield()
-                        if (key == intent.getIntExtra(ScatterbrainApi.EXTRA_ASYNC_HANDLE, -1)) {
+                        if (key == intent.getIntExtra(EXTRA_ASYNC_HANDLE, -1)) {
                             value.result(
                                     key,
-                                    intent.getBundleExtra(ScatterbrainApi.EXTRA_ASYNC_RESULT)
+                                    intent.getBundleExtra(EXTRA_ASYNC_RESULT)
                                             ?: Bundle.EMPTY
                             )
                             resultCallbackSet.remove(key)
@@ -62,10 +62,10 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                 BROADCAST_ERROR -> {
                     resultCallbackSet.forEach { (key, value) ->
                         yield()
-                        if (key == intent.getIntExtra(ScatterbrainApi.EXTRA_ASYNC_HANDLE, -1)) {
+                        if (key == intent.getIntExtra(EXTRA_ASYNC_HANDLE, -1)) {
                             value.err(
                                     key,
-                                    intent.getStringExtra(ScatterbrainApi.EXTRA_ASYNC_RESULT)?: ""
+                                    intent.getStringExtra(EXTRA_ASYNC_RESULT)?: ""
                             )
                             resultCallbackSet.remove(key)
                         }

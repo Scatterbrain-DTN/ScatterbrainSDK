@@ -5,6 +5,7 @@ import dagger.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import javax.inject.Named
@@ -14,7 +15,7 @@ const val SCOPE_DEFAULT = "defaultScope"
 
 @Singleton
 @Component(modules = [SdkComponent.SdkModule::class])
-interface SdkComponent {
+internal interface SdkComponent {
 
     @Component.Builder
     interface Builder {
