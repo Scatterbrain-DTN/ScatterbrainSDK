@@ -3,6 +3,14 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'org.jetbrains.dokka'
+    id 'maven-publish'
+    id 'signing'
+}
+
+ext {
+    PUBLISH_GROUP_ID = "net.ballmerlabs.scatterbrainsdk"
+    PUBLISH_VERSION = rootProject.projectVersionName
+    PUBLISH_ARTIFACT_ID = "sdk"
 }
 
 android {
@@ -13,7 +21,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName = version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -45,6 +53,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3'
 }
+
 repositories {
     mavenCentral()
 }
+
+
+apply from: "../scripts/publish-module.gradle"
+
