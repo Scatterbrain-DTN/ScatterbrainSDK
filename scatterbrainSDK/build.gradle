@@ -7,19 +7,22 @@ plugins {
     id 'signing'
 }
 
+apply from: '../scripts/version.gradle'
+
 ext {
     PUBLISH_GROUP_ID = "net.ballmerlabs.scatterbrainsdk"
-    PUBLISH_VERSION = rootProject.projectVersionName
+    PUBLISH_VERSION = projectVersionName
     PUBLISH_ARTIFACT_ID = "sdk"
+    projectVersionName = ext['projectVersionName']
 }
 
 android {
-    compileSdkVersion 30
     buildToolsVersion "30.0.2"
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
+        compileSdkVersion 30
         versionCode 1
         versionName = version
 
