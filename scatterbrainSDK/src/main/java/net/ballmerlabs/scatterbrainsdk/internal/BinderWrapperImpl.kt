@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -34,11 +35,7 @@ class BinderWrapperImpl @Inject constructor(
         val startIntent = Intent(BIND_ACTION)
         startIntent.`package` = BIND_PACKAGE
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            context.startForegroundService(startIntent)
-        } else {
-            context.startService(startIntent)
-        }
+        ContextCompat.startForegroundService(context, startIntent)
     }
 
     override suspend fun unbindService() {
