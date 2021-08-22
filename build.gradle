@@ -22,8 +22,6 @@ buildscript {
     }
 }
 
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
-
 allprojects {
     repositories {
         google()
@@ -31,5 +29,3 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
-
-apply from: "scripts/publish-root.gradle"

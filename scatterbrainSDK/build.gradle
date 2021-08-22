@@ -18,7 +18,6 @@ ext {
 
 android {
     buildToolsVersion "30.0.2"
-
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
@@ -61,6 +60,7 @@ repositories {
     mavenCentral()
 }
 
-
-apply from: "../scripts/publish-module.gradle"
+if (rootProject.hasProperty("publishable")) {
+    apply from: "../scripts/publish-module.gradle"
+}
 
