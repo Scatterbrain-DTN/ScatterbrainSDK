@@ -280,6 +280,7 @@ class BinderWrapperImpl @Inject constructor(
 
                 override fun onString(result: MutableList<String>) {
                     val pm = context.packageManager
+                    Log.e(TAG, "retrieved permissions ${result.size}")
                     val packageList = result.map { id ->
                         val r = pm.getApplicationInfo(id, PackageManager.GET_META_DATA)
                         NamePackage(pm.getApplicationLabel(r).toString(), r, pm)
