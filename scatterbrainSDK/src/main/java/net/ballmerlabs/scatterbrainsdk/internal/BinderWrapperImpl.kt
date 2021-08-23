@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
@@ -281,7 +282,7 @@ class BinderWrapperImpl @Inject constructor(
                     val pm = context.packageManager
                     val packageList = result.map { id ->
                         val r = pm.getApplicationInfo(id, PackageManager.GET_META_DATA)
-                        NamePackage(pm.getApplicationLabel(r).toString(), r)
+                        NamePackage(pm.getApplicationLabel(r).toString(), r, pm)
                     }
                     c.resume(packageList)
                 }
@@ -370,9 +371,25 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPackages(): List<String> {
-        val res = binderProvider.getAsync().knownPackagesAsync
-        return registerResultStringArrayList(res)
+    override suspend fun getPackages(): List<NamePackage> {
+        val binder = binderProvider.getAsync()
+        val pm = context.packageManager
+        return suspendCancellableCoroutine { c ->
+            binder.getKnownPackagesAsync(object: StringCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onString(result: MutableList<String>) {
+                    val res = result.map { id ->
+                        val r = pm.getApplicationInfo(id, PackageManager.GET_META_DATA)
+                        NamePackage(pm.getApplicationLabel(r).toString(), r, pm)
+                    }
+                    c.resume(res)
+                }
+
+            })
+        }
     }
 
     override suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity) {

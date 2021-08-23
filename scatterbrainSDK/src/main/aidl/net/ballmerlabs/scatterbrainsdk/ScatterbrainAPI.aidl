@@ -41,8 +41,6 @@ interface ScatterbrainAPI {
 
     List<String> getKnownPackages();
 
-    int getKnownPackagesAsync();
-
     boolean isDiscovering();
 
     boolean isPassive();
@@ -51,6 +49,8 @@ interface ScatterbrainAPI {
 
 
     // Nonblocking
+
+    oneway void getKnownPackagesAsync(StringCallback callback);
 
     oneway void getIdentity(in ParcelUuid fingerprint, IdentityCallback callback);
 
