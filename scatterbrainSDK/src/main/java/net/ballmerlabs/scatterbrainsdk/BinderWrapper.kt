@@ -1,7 +1,11 @@
 package net.ballmerlabs.scatterbrainsdk
 
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import java.util.*
 
 /**
@@ -233,7 +237,7 @@ interface BinderWrapper {
      * and is currently not available to 3rd party applications
      * @return list of package names
      */
-    suspend fun getPackages(): List<String>
+    suspend fun getPackages(): List<NamePackage>
 
     /**
      * Unregisters the internal BroadcastReceiver for Scatterbrain events.
@@ -266,9 +270,21 @@ interface BinderWrapper {
  */
 data class NamePackage(
         val name: String,
-        val info: ApplicationInfo
-) {
+        val info: ApplicationInfo,
+        private val pm: PackageManager,
+        var icon: Drawable? = null
+        ) : Comparable<NamePackage> {
     override fun toString(): String {
         return name
+    }
+
+    suspend fun loadIcon(): Drawable = withContext(Dispatchers.IO) {
+        val i = info.loadIcon(pm)
+        icon = i
+        i
+    }
+
+    override fun compareTo(other: NamePackage): Int {
+        return name.compareTo(other.name)
     }
 }
