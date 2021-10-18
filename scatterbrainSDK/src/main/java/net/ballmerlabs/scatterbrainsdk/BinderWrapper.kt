@@ -251,6 +251,11 @@ interface BinderWrapper {
     fun unregister()
 
     /**
+     * Attempts to reconnect to known local peers
+     */
+    suspend fun rescanPeers()
+
+    /**
      * Checks if this SDK is connected to a running Scatterbrain router
      * @return true if connected
      */

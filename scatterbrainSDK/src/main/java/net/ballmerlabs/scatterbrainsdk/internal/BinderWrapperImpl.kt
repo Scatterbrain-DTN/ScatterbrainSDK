@@ -192,6 +192,22 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+    override suspend fun rescanPeers() {
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c ->
+            binder.manualRefreshPeers(object: UnitCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onComplete() {
+                    c.resume(Unit)
+                }
+
+            })
+        }
+    }
+
 
     override suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage> {
         return getScatterMessages(application, since, Date())

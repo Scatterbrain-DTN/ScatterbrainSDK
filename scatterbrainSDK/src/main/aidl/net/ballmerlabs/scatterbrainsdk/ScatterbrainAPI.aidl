@@ -81,4 +81,6 @@ interface ScatterbrainAPI {
     oneway void getByApplicationAsync(in String application, in ScatterMessageCallback callback);
 
     oneway void getByApplicationDateAsync(in String application, long startDate, long endDate, ScatterMessageCallback callback);
+
+    oneway void manualRefreshPeers(UnitCallback callback);
 }
