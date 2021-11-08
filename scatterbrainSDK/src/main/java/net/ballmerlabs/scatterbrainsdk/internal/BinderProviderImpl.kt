@@ -12,7 +12,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -23,12 +23,12 @@ class BinderProviderImpl @Inject constructor(
 ): BinderProvider {
 
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
-    private var binder: ScatterbrainAPI? = null
+    private var binder: ScatterbrainBinderApi? = null
 
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            binder = ScatterbrainAPI.Stub.asInterface(service)
+            binder = ScatterbrainBinderApi.Stub.asInterface(service)
             Log.v(BinderWrapper.TAG, "connected to ScatterRoutingService binder")
             try {
                 bindCallbackSet.forEach { c ->  c(true)}
@@ -81,7 +81,7 @@ class BinderProviderImpl @Inject constructor(
     }
 
 
-    private suspend fun bindService(): ScatterbrainAPI {
+    private suspend fun bindService(): ScatterbrainBinderApi {
         withTimeout(1000L) {
             bindServiceWithoutTimeout()
         }
@@ -101,13 +101,13 @@ class BinderProviderImpl @Inject constructor(
     }
 
 
-    override fun get(): ScatterbrainAPI {
+    override fun get(): ScatterbrainBinderApi {
         return runBlocking {
             bindService()
         }
     }
 
-    override suspend fun getAsync(): ScatterbrainAPI {
+    override suspend fun getAsync(): ScatterbrainBinderApi {
         return bindService()
     }
 }

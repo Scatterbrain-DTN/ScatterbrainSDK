@@ -2,13 +2,13 @@ package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.os.IBinder
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainAPI
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
 
 class MockBinderProvider(
         val iBinder: IBinder
 ) : BinderProvider {
-    val binder = ScatterbrainAPI.Stub.asInterface(iBinder)
-    override suspend fun getAsync(): ScatterbrainAPI {
+    val binder = ScatterbrainBinderApi.Stub.asInterface(iBinder)
+    override suspend fun getAsync(): ScatterbrainBinderApi {
         return binder
     }
 
@@ -21,7 +21,7 @@ class MockBinderProvider(
         return true
     }
 
-    override fun get(): ScatterbrainAPI {
+    override fun get(): ScatterbrainBinderApi {
         return binder
     }
 

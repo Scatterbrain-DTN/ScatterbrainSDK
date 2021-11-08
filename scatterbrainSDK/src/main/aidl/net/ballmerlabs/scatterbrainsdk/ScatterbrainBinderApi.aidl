@@ -1,4 +1,4 @@
-// ScatterbrainAPI.aidl
+// ScatterbrainBinderApi.aidl
 package net.ballmerlabs.scatterbrainsdk;
 import net.ballmerlabs.scatterbrainsdk.ScatterMessage;
 import net.ballmerlabs.scatterbrainsdk.Identity;
@@ -9,7 +9,7 @@ import net.ballmerlabs.scatterbrainsdk.IdentityCallback;
 import net.ballmerlabs.scatterbrainsdk.StringCallback;
 import net.ballmerlabs.scatterbrainsdk.BoolCallback;
 
-interface ScatterbrainAPI {
+interface ScatterbrainBinderApi {
 
 
     // Blocking
