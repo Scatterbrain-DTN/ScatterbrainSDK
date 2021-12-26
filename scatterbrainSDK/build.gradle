@@ -19,7 +19,7 @@ ext {
 android {
     buildToolsVersion "30.0.2"
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 30
         compileSdkVersion 30
         versionCode 1
