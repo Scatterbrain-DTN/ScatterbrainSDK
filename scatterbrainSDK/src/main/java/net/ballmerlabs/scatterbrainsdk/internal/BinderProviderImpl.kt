@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -24,6 +26,16 @@ class BinderProviderImpl @Inject constructor(
 
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
     private var binder: ScatterbrainBinderApi? = null
+    private val connectionLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
+
+
+    private fun mapBinderState(boolean: Boolean): BinderWrapper.Companion.BinderState {
+        return if (boolean)
+            BinderWrapper.Companion.BinderState.STATE_CONNECTED
+        else
+            BinderWrapper.Companion.BinderState.STATE_DISCONNECTED
+
+    }
 
 
     private val callback = object: ServiceConnection {
@@ -38,6 +50,7 @@ class BinderProviderImpl @Inject constructor(
             } finally {
                 bindCallbackSet.clear()
             }
+            connectionLiveData.postValue(mapBinderState(true))
         }
 
         override fun onServiceDisconnected(componentName: ComponentName) {
@@ -45,6 +58,7 @@ class BinderProviderImpl @Inject constructor(
             binder = null
             bindCallbackSet.forEach { c -> c(false) }
             bindCallbackSet.clear()
+            connectionLiveData.postValue(mapBinderState(false))
         }
     }
 
@@ -80,6 +94,9 @@ class BinderProviderImpl @Inject constructor(
 
     }
 
+    override fun getConnectionLivedata(): LiveData<BinderWrapper.Companion.BinderState> {
+        return connectionLiveData
+    }
 
     private suspend fun bindService(): ScatterbrainBinderApi {
         withTimeout(1000L) {

@@ -7,6 +7,8 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -472,6 +474,10 @@ class BinderWrapperImpl @Inject constructor(
         catch (exception: Exception) {
             return false
         }
+    }
+
+    override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> {
+        return binderProvider.getConnectionLivedata()
     }
 
     init {

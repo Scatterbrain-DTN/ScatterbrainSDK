@@ -3,6 +3,7 @@ package net.ballmerlabs.scatterbrainsdk
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -240,6 +241,13 @@ interface BinderWrapper {
     suspend fun getPackages(): List<NamePackage>
 
     /**
+     * Returns a LiveData providing the current connection state
+     *
+     * @return livedata
+     */
+    fun observeBinderState(): LiveData<BinderState>
+
+    /**
      * Unregisters the internal BroadcastReceiver for Scatterbrain events.
      * This must be called to use the Scatterbrain SDK
      */
@@ -264,6 +272,11 @@ interface BinderWrapper {
         const val TAG = "BinderWrapper"
         const val BIND_ACTION = "net.ballmerlabs.uscatterbrain.ScatterRoutingService.BIND"
         const val BIND_PACKAGE = "net.ballmerlabs.scatterroutingservice"
+
+        enum class BinderState {
+            STATE_CONNECTED,
+            STATE_DISCONNECTED
+        }
     }
 }
 
