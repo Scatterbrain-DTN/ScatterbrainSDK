@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -79,6 +80,7 @@ interface BinderWrapper {
      * requires net.ballmerlabs.scatterroutingservice.permission.ACCESS permission
      * @return async flow of identities
      */
+    @ExperimentalCoroutinesApi
     suspend fun observeIdentities(): Flow<List<Identity>>
 
     /**
@@ -88,6 +90,7 @@ interface BinderWrapper {
      * @param application application idenifier
      * @return async flow of messages
      */
+    @ExperimentalCoroutinesApi
     suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
 
     /**
