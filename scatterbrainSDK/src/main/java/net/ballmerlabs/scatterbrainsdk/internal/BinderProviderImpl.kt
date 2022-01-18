@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
+import net.ballmerlabs.scatterbrainsdk.BinderProvider.Companion.mapBinderState
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
 import javax.inject.Inject
@@ -27,16 +28,6 @@ class BinderProviderImpl @Inject constructor(
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
     private var binder: ScatterbrainBinderApi? = null
     private val connectionLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
-
-
-    private fun mapBinderState(boolean: Boolean): BinderWrapper.Companion.BinderState {
-        return if (boolean)
-            BinderWrapper.Companion.BinderState.STATE_CONNECTED
-        else
-            BinderWrapper.Companion.BinderState.STATE_DISCONNECTED
-
-    }
-
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {

@@ -44,11 +44,12 @@ internal interface SdkComponent {
                 binderProvider: BinderProviderImpl
         ): BinderProvider
 
+        @Module
         companion object {
             @Provides
             @Singleton
             @Named(SCOPE_DEFAULT)
-            fun providesCorutineScope(context: Context): CoroutineScope {
+            fun providesCorutineScope(): CoroutineScope {
                 return CoroutineScope(Dispatchers.Default)
             }
         }

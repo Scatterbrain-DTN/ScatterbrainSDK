@@ -8,4 +8,14 @@ interface BinderProvider : Provider<ScatterbrainBinderApi> {
     fun unregisterCallback()
     suspend fun unbindService(): Boolean
     fun getConnectionLivedata(): LiveData<BinderWrapper.Companion.BinderState>
+
+    companion object {
+        fun mapBinderState(boolean: Boolean): BinderWrapper.Companion.BinderState {
+            return if (boolean)
+                BinderWrapper.Companion.BinderState.STATE_CONNECTED
+            else
+                BinderWrapper.Companion.BinderState.STATE_DISCONNECTED
+
+        }
+    }
 }

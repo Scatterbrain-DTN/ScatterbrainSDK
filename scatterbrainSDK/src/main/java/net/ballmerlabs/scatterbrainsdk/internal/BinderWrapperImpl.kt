@@ -8,10 +8,13 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.liveData
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
@@ -19,6 +22,7 @@ import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -29,7 +33,8 @@ import kotlin.coroutines.resumeWithException
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
         private val broadcastReceiver: ScatterbrainBroadcastReceiver,
-        private val binderProvider: BinderProvider
+        private val binderProvider: BinderProvider,
+        @Named(SCOPE_DEFAULT) private val defaultScope: CoroutineScope
 ) : BinderWrapper  {
     
     override suspend fun startService() {
@@ -42,8 +47,7 @@ class BinderWrapperImpl @Inject constructor(
     override suspend fun unbindService() {
         binderProvider.unbindService()
     }
-
-
+    
     private suspend fun registerResultUnit(res: Int) = suspendCancellableCoroutine<Unit>{ continuation ->
         val result: suspend (Int, Bundle) -> Unit = { _, _ ->
             continuation.resumeWith(Result.success(Unit))
@@ -474,8 +478,10 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> {
-        return binderProvider.getConnectionLivedata()
+    override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> = liveData {
+
+        defaultScope.launch { emit(BinderProvider.mapBinderState(isConnected())) }
+        emitSource(binderProvider.getConnectionLivedata())
     }
 
     init {
