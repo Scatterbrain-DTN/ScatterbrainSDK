@@ -8,9 +8,9 @@ import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import net.ballmerlabs.scatterbrainsdk.HandshakeResult
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.*
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.BROADCAST_EVENT
+import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.EXTRA_TRANSACTION_RESULT
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBroadcastReceiver
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -27,8 +27,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
     private val intentFilter = IntentFilter()
             .apply {
                 addAction(BROADCAST_EVENT)
-                addAction(BROADCAST_RESULT)
-                addAction(BROADCAST_ERROR)
             }
     private val eventCallbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
     private val resultCallbackSet = ConcurrentHashMap<Int, AsyncCallback>()
@@ -46,31 +44,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
 
                     eventCallbackSet.forEach { h -> h(handshakeResult) }
                 }
-                BROADCAST_RESULT -> {
-                    resultCallbackSet.forEach { (key, value) ->
-                        yield()
-                        if (key == intent.getIntExtra(EXTRA_ASYNC_HANDLE, -1)) {
-                            value.result(
-                                    key,
-                                    intent.getBundleExtra(EXTRA_ASYNC_RESULT)
-                                            ?: Bundle.EMPTY
-                            )
-                            resultCallbackSet.remove(key)
-                        }
-                    }
-                }
-                BROADCAST_ERROR -> {
-                    resultCallbackSet.forEach { (key, value) ->
-                        yield()
-                        if (key == intent.getIntExtra(EXTRA_ASYNC_HANDLE, -1)) {
-                            value.err(
-                                    key,
-                                    intent.getStringExtra(EXTRA_ASYNC_RESULT)?: ""
-                            )
-                            resultCallbackSet.remove(key)
-                        }
-                    }
-                }
+
                 else -> Log.e(TAG, "invalid action ${intent.action}")
             }
         }

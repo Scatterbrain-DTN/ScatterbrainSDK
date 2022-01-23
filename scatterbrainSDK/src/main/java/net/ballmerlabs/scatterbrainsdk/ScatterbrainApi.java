@@ -21,8 +21,6 @@ public class ScatterbrainApi {
     public static final String PERMISSION_SUPERUSER = "net.ballmerlabs.scatterroutingservice.permission.SUPERUSER";
     public static final String DEFAULT_MIME = "application/octet-stream";
     public static final String BROADCAST_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT";
-    public static final String BROADCAST_RESULT = "net.ballmerlabs.scatterroutingservice.broadcast.API_RESULT";
-    public static final String BROADCAST_ERROR = "net.ballmerlabs.scatterroutingservice.broadcast.API_ERR";
 
     private final SdkComponent sdkComponent;
 
