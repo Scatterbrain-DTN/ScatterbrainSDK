@@ -259,6 +259,14 @@ interface BinderWrapper {
     @Throws(UnauthorizedException::class)
     suspend fun sendMessage(messages: List<ScatterMessage>, identity: Identity)
 
+
+    /**
+     * Gets the current critical permissions granted to the router. This should be used to
+     * prompt the user to open Scatterbrain and grant permissions
+     */
+    @Throws(UnauthorizedException::class)
+    suspend fun getPermissionStatus(): PermissionStatus
+
     /**
      * Gets a list of packages declaring a Scatterbrain compatible BroadcastReceiver.
      * This function requires net.ballmerlabs.scatterroutingservice.permission.SUPERUSER permission

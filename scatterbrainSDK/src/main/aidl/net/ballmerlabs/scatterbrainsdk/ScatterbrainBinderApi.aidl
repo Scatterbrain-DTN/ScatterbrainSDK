@@ -8,6 +8,7 @@ import net.ballmerlabs.scatterbrainsdk.ByteArrayCallback;
 import net.ballmerlabs.scatterbrainsdk.IdentityCallback;
 import net.ballmerlabs.scatterbrainsdk.StringCallback;
 import net.ballmerlabs.scatterbrainsdk.BoolCallback;
+import net.ballmerlabs.scatterbrainsdk.PermissionCallback;
 
 interface ScatterbrainBinderApi {
 
@@ -83,4 +84,6 @@ interface ScatterbrainBinderApi {
     oneway void getByApplicationDateAsync(in String application, long startDate, long endDate, ScatterMessageCallback callback);
 
     oneway void manualRefreshPeers(UnitCallback callback);
+
+    oneway void getPermissionsGranted(PermissionCallback callback);
 }

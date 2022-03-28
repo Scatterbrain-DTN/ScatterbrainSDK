@@ -433,6 +433,23 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+
+    override suspend fun getPermissionStatus(): PermissionStatus {
+        val binder = binderProvider.getAsync()
+        return suspendCancellableCoroutine { c ->
+            binder.getPermissionsGranted(object: PermissionCallback.Stub() {
+                override fun onError(error: String) {
+                    c.resumeWithException(IllegalStateException(error))
+                }
+
+                override fun onPermission(permission: PermissionStatus) {
+                    c.resume(permission)
+                }
+
+            })
+        }
+    }
+
     override suspend fun startDiscover() {
         binderProvider.getAsync().startDiscovery()
     }

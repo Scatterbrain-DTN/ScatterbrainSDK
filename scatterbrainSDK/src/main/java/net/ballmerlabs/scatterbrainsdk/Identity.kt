@@ -3,6 +3,8 @@ package net.ballmerlabs.scatterbrainsdk
 import android.os.Parcel
 import android.os.ParcelUuid
 import android.os.Parcelable
+import net.ballmerlabs.scatterbrainsdk.internal.readParcelableMap
+import net.ballmerlabs.scatterbrainsdk.internal.writeParcelableMap
 import java.util.*
 
 /**
@@ -42,17 +44,6 @@ open class Identity : Parcelable {
         this.isOwned = hasPrivateKey
     }
 
-    private fun interface ParcelWriter<T> {
-        fun writeToParcel(
-                value: T,
-                parcel: Parcel, flags: Int
-        )
-    }
-
-    private fun interface ParcelReader<T> {
-        fun readFromParcel(parcel: Parcel): T
-    }
-
     protected constructor(inParcel: Parcel) {
         extraKeys = readParcelableMap(inParcel) { parcel ->
             val len = parcel.readInt()
@@ -87,31 +78,6 @@ open class Identity : Parcelable {
     }
 
     companion object {
-        private fun <K, V> writeParcelableMap(
-                map: Map<K, V>,
-                parcel: Parcel,
-                flags: Int,
-                parcelWriter: ParcelWriter<Map.Entry<K, V>>
-        ) {
-            parcel.writeInt(map.size)
-            for (e in map.entries) {
-                parcelWriter.writeToParcel(e, parcel, flags)
-            }
-        }
-
-        private fun <K, V> readParcelableMap(
-                parcel: Parcel,
-                parcelReader: ParcelReader<Map.Entry<K, V>>
-        ): Map<K, V> {
-            val size = parcel.readInt()
-            val map: MutableMap<K, V> = HashMap(size)
-            for (i in 0 until size) {
-                val value = parcelReader.readFromParcel(parcel)
-                map[value.key] = value.value
-            }
-            return map
-        }
-
         @JvmField
         val CREATOR: Parcelable.Creator<Identity> = object : Parcelable.Creator<Identity> {
             override fun createFromParcel(`in`: Parcel): Identity {
