@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.Objects;
 
 public class ScatterbrainApi {
-    public static final int MAX_BODY_SIZE = 1024*1024*4;
+    public static final int MAX_BODY_SIZE = 1024*1019; // Binders have 1MB size limit, leave 5kb for metadata
     public static final String EXTRA_TRANSACTION_RESULT = "transaction_result";
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
     public static final String EXTRA_ASYNC_RESULT = "async_result";

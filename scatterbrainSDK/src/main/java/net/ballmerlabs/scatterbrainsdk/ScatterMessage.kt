@@ -8,11 +8,11 @@ import java.io.FileDescriptor
 import java.io.FileNotFoundException
 import java.util.*
 
-private fun validateBody(`val`: Int): Int {
-    if (`val` > ScatterbrainApi.MAX_BODY_SIZE) {
+private fun validateBody(size: Int): Int {
+    if (size > ScatterbrainApi.MAX_BODY_SIZE) {
         throw BadParcelableException("invalid array size")
     }
-    return `val`
+    return size
 }
 
 
@@ -80,7 +80,7 @@ class ScatterMessage private constructor(
     }
 
     override fun writeToParcel(parcel: Parcel, i: Int) {
-        parcel.writeInt(body!!.size)
+        parcel.writeInt(validateBody(body!!.size))
         parcel.writeByteArray(body)
         parcel.writeParcelable(if (fromFingerprint == null) null else ParcelUuid(fromFingerprint), i)
         parcel.writeParcelable(if (toFingerprint == null) null else ParcelUuid(toFingerprint), i)
