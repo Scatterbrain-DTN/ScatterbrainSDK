@@ -2,9 +2,7 @@ package net.ballmerlabs.scatterbrainsdk.internal
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
 import android.os.ParcelUuid
-import android.os.Parcelable
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -45,56 +43,6 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun unbindService() {
         binderProvider.unbindService()
-    }
-    
-    private suspend fun registerResultUnit(res: Int) = suspendCancellableCoroutine<Unit>{ continuation ->
-        val result: suspend (Int, Bundle) -> Unit = { _, _ ->
-            continuation.resumeWith(Result.success(Unit))
-        }
-        val err: suspend (Int, String) -> Unit = { _, str ->
-            continuation.resumeWith(Result.failure(IllegalStateException(str)))
-        }
-        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
-        continuation.invokeOnCancellation { broadcastReceiver.removeOnResultCallback(res) }
-    }
-
-    private suspend inline fun <reified T: Parcelable> registerResultParcelableArray(
-            res: Int
-    ) = suspendCancellableCoroutine<ArrayList<T>> { continuation ->
-        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
-            continuation.resumeWith(Result.success(
-                    bundle.getParcelableArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
-            ))
-        }
-        val err: suspend (Int, String) -> Unit = { _, str ->
-            continuation.resumeWith(Result.failure(IllegalStateException(str)))
-        }
-        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
-        continuation.invokeOnCancellation { broadcastReceiver.removeOnResultCallback(res) }
-    }
-
-    private suspend fun registerResultByteArray(res: Int) = suspendCancellableCoroutine<ByteArray> { continuation ->
-        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
-            continuation.resumeWith(Result.success(
-                    bundle.getByteArray(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
-            ))
-        }
-        val err: suspend (Int, String) -> Unit = { _, str ->
-            continuation.resumeWith(Result.failure(IllegalStateException(str)))
-        }
-        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
-    }
-
-    private suspend fun registerResultStringArrayList(res: Int) = suspendCancellableCoroutine<ArrayList<String>> { continuation ->
-        val result: suspend (Int, Bundle) -> Unit = { _, bundle ->
-            continuation.resumeWith(Result.success(
-                    bundle.getStringArrayList(ScatterbrainApi.EXTRA_ASYNC_RESULT)!!
-            ))
-        }
-        val err: suspend (Int, String) -> Unit = { _, str ->
-            continuation.resumeWith(Result.failure(IllegalStateException(str)))
-        }
-        broadcastReceiver.addOnResultCallback(res, AsyncCallback(result, err))
     }
 
     override suspend fun getIdentity(fingerprint: UUID): Identity? {
@@ -166,10 +114,10 @@ class BinderWrapperImpl @Inject constructor(
 
     @ExperimentalCoroutinesApi
     override suspend fun observeIdentities(): Flow<List<Identity>>  = callbackFlow {
-        offer(getIdentities())
+        trySend(getIdentities())
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.identities > 0) {
-                offer(getIdentities())
+                trySend(getIdentities())
             }
         }
         broadcastReceiver.addOnReceiveCallback(callback)
@@ -237,7 +185,7 @@ class BinderWrapperImpl @Inject constructor(
         var now = Date()
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
-                offer(getScatterMessages(application, now))
+                trySend(getScatterMessages(application, now))
                 now = Date()
             }
         }

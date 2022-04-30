@@ -10,8 +10,8 @@ import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
 class MockBinderProvider(
         val iBinder: IBinder
 ) : BinderProvider {
-    val binder = ScatterbrainBinderApi.Stub.asInterface(iBinder)
-    val testLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
+    val binder: ScatterbrainBinderApi = ScatterbrainBinderApi.Stub.asInterface(iBinder)
+    private val testLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
     override suspend fun getAsync(): ScatterbrainBinderApi {
         return binder
     }

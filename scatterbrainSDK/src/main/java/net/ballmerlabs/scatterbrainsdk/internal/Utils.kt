@@ -1,8 +1,6 @@
 package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.os.Parcel
-import net.ballmerlabs.scatterbrainsdk.Identity
-import java.util.HashMap
 
 
 fun interface ParcelWriter<T> {

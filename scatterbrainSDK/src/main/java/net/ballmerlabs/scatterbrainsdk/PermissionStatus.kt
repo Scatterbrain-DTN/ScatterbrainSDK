@@ -4,8 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import net.ballmerlabs.scatterbrainsdk.internal.readParcelableMap
 import net.ballmerlabs.scatterbrainsdk.internal.writeParcelableMap
-import java.util.AbstractMap
-import java.util.HashMap
+import java.util.*
 
 class PermissionStatus(
         private val permissions: Map<String, Boolean>
@@ -16,8 +15,7 @@ class PermissionStatus(
                 val b = key == 0
                 AbstractMap.SimpleEntry(parcel.readString()!!, b)
             }
-    ) {
-    }
+    )
 
     fun allGranted(): Boolean {
         return ! permissions.values.contains(false)
