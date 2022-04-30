@@ -3,6 +3,7 @@ package net.ballmerlabs.scatterbrainsdk
 import android.net.Uri
 import android.os.*
 import android.webkit.MimeTypeMap
+import net.ballmerlabs.scatterbrainsdk.ScatterMessage.Builder
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
@@ -46,7 +47,7 @@ private fun boolConvert(boolean: Boolean): Int {
  * @property id a unique id referring to this message, valid within the local router only
  */
 class ScatterMessage private constructor(
-        val body: ByteArray?,
+        val body: SharedMemory?,
         val fromFingerprint: UUID?,
         val toFingerprint: UUID?,
         val application: String,
@@ -61,7 +62,7 @@ class ScatterMessage private constructor(
 ): Parcelable {
 
     private constructor(parcel: Parcel): this(
-            body = readByteArray(parcel),
+            body = parcel.readParcelable(SharedMemory::class.java.classLoader),
             fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
@@ -81,7 +82,7 @@ class ScatterMessage private constructor(
 
     override fun writeToParcel(parcel: Parcel, i: Int) {
         parcel.writeInt(validateBody(body!!.size))
-        parcel.writeByteArray(body)
+        parcel.writeParcelable(body, i)
         parcel.writeParcelable(if (fromFingerprint == null) null else ParcelUuid(fromFingerprint), i)
         parcel.writeParcelable(if (toFingerprint == null) null else ParcelUuid(toFingerprint), i)
         parcel.writeString(application)
@@ -102,7 +103,7 @@ class ScatterMessage private constructor(
      *
      */
     open class Builder protected constructor(
-            private var body: ByteArray? = null,
+            private var body: SharedMemory? = null,
             protected var fromFingerprint: UUID? = null,
             private var toFingerprint: UUID? = null,
             private var application: String? = null,
@@ -117,7 +118,7 @@ class ScatterMessage private constructor(
             private var receiveDate: Date = Date(0L),
             private var id: ParcelUuid? = null
     ) {
-        protected fun setBody(body: ByteArray?) = apply {
+        protected fun setBody(body: SharedMemory?) = apply {
             this.body = body
             todisk = false
         }
@@ -205,7 +206,10 @@ class ScatterMessage private constructor(
              * @return builder class
              */
             fun newInstance(data: ByteArray): Builder {
-                return Builder().setBody(data)
+                val shared = SharedMemory.create("scatterMessage", data.size)
+                val buf = shared.mapReadWrite()
+                buf.put(data)
+                return Builder().setBody(shared)
             }
 
             /**
