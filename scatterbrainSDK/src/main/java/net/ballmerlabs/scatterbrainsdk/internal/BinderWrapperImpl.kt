@@ -28,7 +28,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
-@ExperimentalCoroutinesApi
 @Singleton
 class BinderWrapperImpl @Inject constructor(
         val context: Context,
