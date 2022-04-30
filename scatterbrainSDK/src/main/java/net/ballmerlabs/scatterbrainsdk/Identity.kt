@@ -28,7 +28,7 @@ open class Identity : Parcelable {
     val fingerprint: UUID
     val isOwned: Boolean
 
-    protected constructor(
+    constructor(
             map: Map<String, ByteArray>,
             pub: ByteArray,
             name: String,

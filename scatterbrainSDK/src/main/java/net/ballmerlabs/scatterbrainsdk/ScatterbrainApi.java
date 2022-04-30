@@ -1,5 +1,6 @@
 package net.ballmerlabs.scatterbrainsdk;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.provider.DocumentsContract;
 import android.webkit.MimeTypeMap;
@@ -16,11 +17,16 @@ public class ScatterbrainApi {
     public static final String PROTOBUF_PRIVKEY_KEY = "scatterbrain";
     public static final String EXTRA_ASYNC_RESULT = "async_result";
     public static final String EXTRA_ASYNC_HANDLE = "async_handle";
+    public static final String PACKAGE_NAME = "net.ballmerlabs.scatterroutingservice";
     public static final String PERMISSION_ACCESS = "net.ballmerlabs.scatterroutingservice.permission.ACCESS";
     public static final String PERMISSION_ADMIN = "net.ballmerlabs.scatterroutingservice.permission.ADMIN";
     public static final String PERMISSION_SUPERUSER = "net.ballmerlabs.scatterroutingservice.permission.SUPERUSER";
     public static final String DEFAULT_MIME = "application/octet-stream";
     public static final String BROADCAST_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT";
+    public static final String IMPORT_IDENTITY_ACTION = "net.ballmerlabs.scatterroutingservice.IMPORT_IDENTITY_ACTION";
+    public static final String EXTRA_IDENTITY_RESULT = "net.ballmerlabs.scatterroutingservice.EXTRA_IDENTITY_RESULT";
+    public static final String EXTRA_NUM_IDENTITIES = "net.ballmerlabs.scatterroutingservice.EXTRA_NUM_IDENTITIES";
+    public static final ComponentName IMPORT_IDENTITY_COMPONENT = new ComponentName(PACKAGE_NAME, PACKAGE_NAME + ".ui.identity.IdentityImportActivity");
 
     private final SdkComponent sdkComponent;
 
