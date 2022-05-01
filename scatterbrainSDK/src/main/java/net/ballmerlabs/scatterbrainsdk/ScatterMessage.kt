@@ -34,7 +34,7 @@ private fun boolConvert(boolean: Boolean): Int {
 /**
  * Represents a messages sent or received via Scatterbrain.
  * @property Builder builder class to construct an instance of ScatterMessage
- * @property body contents of message, null if message is a file
+ * @property shm contents of message, null if message is a file
  * @property fromFingerprint identity fingerprint of sender, null if anonymous
  * @property toFingerprint identity fingerprint of recipient. Currently unused
  * @property application name of application this message belongs to
@@ -47,7 +47,7 @@ private fun boolConvert(boolean: Boolean): Int {
  * @property id a unique id referring to this message, valid within the local router only
  */
 class ScatterMessage private constructor(
-        val body: SharedMemory?,
+        val shm: SharedMemory?,
         val fromFingerprint: UUID?,
         val toFingerprint: UUID?,
         val application: String,
@@ -61,8 +61,20 @@ class ScatterMessage private constructor(
         val id: ParcelUuid
 ): Parcelable {
 
+    val body by lazy {
+        if (shm == null) {
+            null
+        } else {
+            val buf = shm.mapReadOnly()
+            val bytes = ByteArray(buf.remaining())
+            buf.get(bytes)
+            shm.close()
+            buf
+        }
+    }
+
     private constructor(parcel: Parcel): this(
-            body = parcel.readParcelable(SharedMemory::class.java.classLoader),
+            shm = parcel.readParcelable(SharedMemory::class.java.classLoader),
             fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
@@ -81,7 +93,7 @@ class ScatterMessage private constructor(
     }
 
     override fun writeToParcel(parcel: Parcel, i: Int) {
-        parcel.writeParcelable(body, i)
+        parcel.writeParcelable(shm, i)
         parcel.writeParcelable(if (fromFingerprint == null) null else ParcelUuid(fromFingerprint), i)
         parcel.writeParcelable(if (toFingerprint == null) null else ParcelUuid(toFingerprint), i)
         parcel.writeString(application)
@@ -93,12 +105,12 @@ class ScatterMessage private constructor(
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
         parcel.writeParcelable(id, i)
-        body?.close()
+        shm?.close()
     }
 
 
     protected fun finalize() {
-        body?.close()
+        shm?.close()
     }
 
     /**
@@ -106,7 +118,7 @@ class ScatterMessage private constructor(
      *
      */
     open class Builder protected constructor(
-            private var body: SharedMemory? = null,
+            private var shm: SharedMemory? = null,
             protected var fromFingerprint: UUID? = null,
             private var toFingerprint: UUID? = null,
             private var application: String? = null,
@@ -121,8 +133,8 @@ class ScatterMessage private constructor(
             private var receiveDate: Date = Date(0L),
             private var id: ParcelUuid? = null
     ) {
-        protected fun setBody(body: SharedMemory?) = apply {
-            this.body = body
+        protected fun setShm(body: SharedMemory?) = apply {
+            this.shm = body
             todisk = false
         }
 
@@ -168,8 +180,8 @@ class ScatterMessage private constructor(
         }
 
         private fun verify() {
-            require(!(body != null && fileDescriptor != null)) { "must set one of body or file" }
-            require(!(body == null && fileDescriptor == null)) { "set either body or file" }
+            require(!(shm != null && fileDescriptor != null)) { "must set one of body or file" }
+            require(!(shm == null && fileDescriptor == null)) { "set either body or file" }
             requireNotNull(application) { "applicaiton must be set" }
             check(!fileNotFound) { "file not found" }
         }
@@ -183,7 +195,7 @@ class ScatterMessage private constructor(
         fun build(): ScatterMessage {
             verify()
             return ScatterMessage(
-                    body = body,
+                    shm = shm,
                     toFingerprint = toFingerprint,
                     fromFingerprint = fromFingerprint,
                     application = application!!,
@@ -212,7 +224,7 @@ class ScatterMessage private constructor(
                 val shared = SharedMemory.create("scatterMessage", data.size)
                 val buf = shared.mapReadWrite()
                 buf.put(data)
-                return Builder().setBody(shared)
+                return Builder().setShm(shared)
             }
 
             /**
