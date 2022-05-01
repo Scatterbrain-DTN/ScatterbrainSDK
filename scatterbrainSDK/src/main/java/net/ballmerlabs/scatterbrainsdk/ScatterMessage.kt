@@ -81,7 +81,6 @@ class ScatterMessage private constructor(
     }
 
     override fun writeToParcel(parcel: Parcel, i: Int) {
-        parcel.writeInt(validateBody(body!!.size))
         parcel.writeParcelable(body, i)
         parcel.writeParcelable(if (fromFingerprint == null) null else ParcelUuid(fromFingerprint), i)
         parcel.writeParcelable(if (toFingerprint == null) null else ParcelUuid(toFingerprint), i)
@@ -94,9 +93,13 @@ class ScatterMessage private constructor(
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
         parcel.writeParcelable(id, i)
+        body?.close()
     }
 
 
+    protected fun finalize() {
+        body?.close()
+    }
 
     /**
      * Builder class used to construct a ScatterMessage
