@@ -69,7 +69,7 @@ class ScatterMessage private constructor(
             val bytes = ByteArray(buf.remaining())
             buf.get(bytes)
             shm.close()
-            buf
+            bytes
         }
     }
 
