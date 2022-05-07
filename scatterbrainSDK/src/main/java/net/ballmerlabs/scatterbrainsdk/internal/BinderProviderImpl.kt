@@ -27,7 +27,7 @@ class BinderProviderImpl @Inject constructor(
 
     private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
     private var binder: ScatterbrainBinderApi? = null
-    private val connectionLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
+    private val connectionLiveData = MutableLiveData(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {

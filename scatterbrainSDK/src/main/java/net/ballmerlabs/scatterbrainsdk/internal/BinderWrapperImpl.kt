@@ -442,10 +442,8 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> = liveData {
-
-        defaultScope.launch { emit(BinderProvider.mapBinderState(isConnected())) }
-        emitSource(binderProvider.getConnectionLivedata())
+    override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> {
+       return binderProvider.getConnectionLivedata()
     }
 
     init {
