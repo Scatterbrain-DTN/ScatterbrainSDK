@@ -32,25 +32,37 @@ class BinderProviderImpl @Inject constructor(
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             binder = ScatterbrainBinderApi.Stub.asInterface(service)
             Log.v(BinderWrapper.TAG, "connected to ScatterRoutingService binder")
-            connectionLiveData.postValue(mapBinderState(true))
+            startConnected()
         }
 
         override fun onServiceDisconnected(componentName: ComponentName) {
             Log.v(BinderWrapper.TAG, "onservicedisconnected")
             binder = null
-            connectionLiveData.postValue(mapBinderState(false))
+            startDisconnected()
         }
 
         override fun onBindingDied(name: ComponentName?) {
             super.onBindingDied(name)
             binder = null
-            connectionLiveData.postValue(mapBinderState(false))
+            startDisconnected()
         }
 
         override fun onNullBinding(name: ComponentName?) {
             super.onNullBinding(name)
             binder = null
-            connectionLiveData.postValue(mapBinderState(false))
+            startDisconnected()
+        }
+    }
+
+    private fun startConnected() {
+        if (connectionLiveData.value != BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
+            connectionLiveData.postValue(BinderWrapper.Companion.BinderState.STATE_CONNECTED)
+        }
+    }
+
+    private fun startDisconnected() {
+        if(connectionLiveData.value != BinderWrapper.Companion.BinderState.STATE_DISCONNECTED) {
+            connectionLiveData.postValue(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
         }
     }
 
@@ -60,6 +72,7 @@ class BinderProviderImpl @Inject constructor(
             bindIntent.`package` = BinderWrapper.BIND_PACKAGE
             context.bindService(bindIntent, callback, 0)
         } else {
+            startConnected()
             ret.resume(Unit)
         }
 
@@ -70,7 +83,7 @@ class BinderProviderImpl @Inject constructor(
     }
 
     private suspend fun bindService(): ScatterbrainBinderApi {
-        withTimeout(1000L) {
+        withTimeout(5000L) {
             bindServiceWithoutTimeout()
         }
         return binder!!
@@ -78,7 +91,7 @@ class BinderProviderImpl @Inject constructor(
 
     override fun isConnected(): Boolean {
         val res = binder != null
-        connectionLiveData.postValue(mapBinderState(res))
+        if(res) startConnected() else startDisconnected()
         return res
     }
 
@@ -89,6 +102,7 @@ class BinderProviderImpl @Inject constructor(
             }
             ret.resume(true)
         } catch (e: IllegalArgumentException) {
+            startDisconnected()
             ret.resume(true) //service already unbound
         }
     }
