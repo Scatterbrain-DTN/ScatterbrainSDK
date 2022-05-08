@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import javax.inject.Provider
 
 interface BinderProvider : Provider<ScatterbrainBinderApi> {
-    suspend fun getAsync(): ScatterbrainBinderApi
+    suspend fun getAsync(timeout: Long = 5000L): ScatterbrainBinderApi
     suspend fun unbindService(): Boolean
     fun isConnected(): Boolean
     fun getConnectionLivedata(): LiveData<BinderWrapper.Companion.BinderState>

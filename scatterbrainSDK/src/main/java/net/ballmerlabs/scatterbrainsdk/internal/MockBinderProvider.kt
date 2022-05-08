@@ -12,7 +12,7 @@ class MockBinderProvider(
 ) : BinderProvider {
     val binder: ScatterbrainBinderApi = ScatterbrainBinderApi.Stub.asInterface(iBinder)
     private val testLiveData = MutableLiveData<BinderWrapper.Companion.BinderState>()
-    override suspend fun getAsync(): ScatterbrainBinderApi {
+    override suspend fun getAsync(timeout: Long): ScatterbrainBinderApi {
         return binder
     }
 

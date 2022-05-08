@@ -82,8 +82,8 @@ class BinderProviderImpl @Inject constructor(
         return connectionLiveData
     }
 
-    private suspend fun bindService(): ScatterbrainBinderApi {
-        withTimeout(5000L) {
+    private suspend fun bindService(timeout: Long): ScatterbrainBinderApi {
+        withTimeout(timeout) {
             bindServiceWithoutTimeout()
         }
         return binder!!
@@ -110,11 +110,11 @@ class BinderProviderImpl @Inject constructor(
 
     override fun get(): ScatterbrainBinderApi {
         return runBlocking {
-            bindService()
+            bindService(5000L)
         }
     }
 
-    override suspend fun getAsync(): ScatterbrainBinderApi {
-        return bindService()
+    override suspend fun getAsync(timeout: Long): ScatterbrainBinderApi {
+        return bindService(timeout)
     }
 }

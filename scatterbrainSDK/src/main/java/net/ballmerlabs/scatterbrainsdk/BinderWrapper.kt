@@ -297,7 +297,7 @@ interface BinderWrapper {
     /**
      * Attempts a connection to the scatterbrain service
      */
-    suspend fun bindService()
+    suspend fun bindService(timeout: Long = 5000L)
 
     /**
      * Attempts to reconnect to known local peers

@@ -106,8 +106,8 @@ class BinderWrapperImpl @Inject constructor(
         return binderProvider.getAsync().identities
     }
 
-    override suspend fun bindService() {
-        binderProvider.getAsync()
+    override suspend fun bindService(timeout: Long) {
+        binderProvider.getAsync(timeout)
     }
 
     override suspend fun stopService() {
