@@ -295,6 +295,11 @@ interface BinderWrapper {
     fun unregister()
 
     /**
+     * Attempts a connection to the scatterbrain service
+     */
+    suspend fun bindService()
+
+    /**
      * Attempts to reconnect to known local peers
      */
     @Throws(UnauthorizedException::class)

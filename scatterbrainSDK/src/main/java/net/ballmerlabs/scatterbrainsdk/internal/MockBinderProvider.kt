@@ -16,12 +16,12 @@ class MockBinderProvider(
         return binder
     }
 
-    override fun unregisterCallback() {
-        //TODO: ignored
-    }
-
     override suspend fun unbindService(): Boolean {
         //TODO: ignored
+        return true
+    }
+
+    override fun isConnected(): Boolean {
         return true
     }
 

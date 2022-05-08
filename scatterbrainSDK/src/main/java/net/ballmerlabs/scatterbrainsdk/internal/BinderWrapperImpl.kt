@@ -33,7 +33,7 @@ class BinderWrapperImpl @Inject constructor(
         private val binderProvider: BinderProvider,
         @Named(SCOPE_DEFAULT) private val defaultScope: CoroutineScope
 ) : BinderWrapper  {
-    
+
     override suspend fun startService() {
         val startIntent = Intent(BIND_ACTION)
         startIntent.`package` = BIND_PACKAGE
@@ -104,6 +104,10 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun getIdentities(): List<Identity> {
         return binderProvider.getAsync().identities
+    }
+
+    override suspend fun bindService() {
+        binderProvider.getAsync()
     }
 
     override suspend fun stopService() {
@@ -422,24 +426,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override suspend fun isConnected(): Boolean {
-        try {
-            val binder = binderProvider.getAsync()
-            return suspendCancellableCoroutine { c ->
-                binder.ping(object : UnitCallback.Stub() {
-                    override fun onError(error: String?) {
-                        c.resume(false)
-                    }
-
-                    override fun onComplete() {
-                        c.resume(true)
-                    }
-
-                })
-            }
-        }
-        catch (exception: Exception) {
-            return false
-        }
+        return binderProvider.isConnected()
     }
 
     override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> {

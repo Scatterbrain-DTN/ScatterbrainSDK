@@ -25,60 +25,40 @@ class BinderProviderImpl @Inject constructor(
         val context: Context
 ): BinderProvider {
 
-    private val bindCallbackSet: MutableSet<(Boolean?) -> Unit> = mutableSetOf()
     private var binder: ScatterbrainBinderApi? = null
-    private val connectionLiveData = MutableLiveData(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
+    private val connectionLiveData = MutableLiveData(mapBinderState(false))
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             binder = ScatterbrainBinderApi.Stub.asInterface(service)
             Log.v(BinderWrapper.TAG, "connected to ScatterRoutingService binder")
-            try {
-                bindCallbackSet.forEach { c ->  c(true)}
-            } catch (e: RemoteException) {
-                Log.e(BinderWrapper.TAG, "RemoteException: $e")
-                bindCallbackSet.forEach { c -> c(null) }
-            } finally {
-                bindCallbackSet.clear()
-            }
             connectionLiveData.postValue(mapBinderState(true))
         }
 
         override fun onServiceDisconnected(componentName: ComponentName) {
             Log.v(BinderWrapper.TAG, "onservicedisconnected")
             binder = null
-            bindCallbackSet.forEach { c -> c(false) }
-            bindCallbackSet.clear()
+            connectionLiveData.postValue(mapBinderState(false))
+        }
+
+        override fun onBindingDied(name: ComponentName?) {
+            super.onBindingDied(name)
+            binder = null
+            connectionLiveData.postValue(mapBinderState(false))
+        }
+
+        override fun onNullBinding(name: ComponentName?) {
+            super.onNullBinding(name)
+            binder = null
             connectionLiveData.postValue(mapBinderState(false))
         }
     }
 
-    override fun unregisterCallback() {
-        bindCallbackSet.forEach { unregisterCallback(it) }
-    }
-
-    private fun registerCallback(c: (Boolean?) -> Unit) {
-        bindCallbackSet.add(c)
-    }
-
-    private fun unregisterCallback(c: (Boolean?) -> Unit) {
-        bindCallbackSet.remove(c)
-    }
-
     private suspend fun bindServiceWithoutTimeout(): Unit = suspendCancellableCoroutine { ret ->
         if (binder == null) {
-            val call: (v: Boolean?) -> Unit = { b ->
-                if (b == null || b == false)
-                    ret.resumeWithException(IllegalStateException("failed to connect"))
-                else
-                    ret.resume(Unit)
-            }
-            registerCallback(call)
             val bindIntent = Intent(BinderWrapper.BIND_ACTION)
             bindIntent.`package` = BinderWrapper.BIND_PACKAGE
             context.bindService(bindIntent, callback, 0)
-            ret.invokeOnCancellation { unregisterCallback(call) }
-
         } else {
             ret.resume(Unit)
         }
@@ -96,6 +76,11 @@ class BinderProviderImpl @Inject constructor(
         return binder!!
     }
 
+    override fun isConnected(): Boolean {
+        val res = binder != null
+        connectionLiveData.postValue(mapBinderState(res))
+        return res
+    }
 
     override suspend fun unbindService(): Boolean = suspendCoroutine { ret ->
         try {
