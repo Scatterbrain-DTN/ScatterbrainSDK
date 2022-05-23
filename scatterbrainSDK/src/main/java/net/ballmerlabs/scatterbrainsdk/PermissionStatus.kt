@@ -10,7 +10,7 @@ class PermissionStatus(
         private val permissions: Map<String, Boolean>
 ): Parcelable {
     constructor(parcel: Parcel) : this(
-            permissions = readParcelableMap(parcel) { p ->
+            permissions = readParcelableMap(parcel) {
                 val key = parcel.readInt()
                 val b = key == 0
                 AbstractMap.SimpleEntry(parcel.readString()!!, b)
