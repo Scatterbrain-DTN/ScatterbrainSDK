@@ -26,7 +26,7 @@ class BinderProviderImpl @Inject constructor(
 ): BinderProvider {
 
     private var binder: ScatterbrainBinderApi? = null
-    private val connectionLiveData = MutableLiveData(mapBinderState(false))
+    private val connectionLiveData = MutableLiveData(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -90,9 +90,7 @@ class BinderProviderImpl @Inject constructor(
     }
 
     override fun isConnected(): Boolean {
-        val res = binder != null
-        if(res) startConnected() else startDisconnected()
-        return res
+        return connectionLiveData.value == BinderWrapper.Companion.BinderState.STATE_CONNECTED
     }
 
     override suspend fun unbindService(): Boolean = suspendCoroutine { ret ->
