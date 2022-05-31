@@ -315,9 +315,9 @@ interface BinderWrapper {
         const val BIND_ACTION = "net.ballmerlabs.uscatterbrain.ScatterRoutingService.BIND"
         const val BIND_PACKAGE = "net.ballmerlabs.scatterroutingservice"
 
-        enum class BinderState {
-            STATE_CONNECTED,
-            STATE_DISCONNECTED
+        enum class BinderState(val message: String) {
+            STATE_CONNECTED("Running"),
+            STATE_DISCONNECTED("Stopped")
         }
     }
 }
