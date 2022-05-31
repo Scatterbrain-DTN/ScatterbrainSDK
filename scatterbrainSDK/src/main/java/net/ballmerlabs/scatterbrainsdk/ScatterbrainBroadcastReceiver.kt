@@ -13,4 +13,5 @@ interface ScatterbrainBroadcastReceiver {
     fun removeOnResultCallback(handle: Int)
     fun wipeAsyncCallbacks()
     fun wipeResultCallbacks()
+    fun postRouterState(routerState: RouterState)
 }

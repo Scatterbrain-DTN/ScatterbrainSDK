@@ -65,6 +65,10 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
         }
     }
 
+    override fun postRouterState(routerState: RouterState) {
+        routerStateLiveData.postValue(routerState)
+    }
+
     override fun observeRouterState(): LiveData<RouterState> {
         return routerStateLiveData
     }
