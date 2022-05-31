@@ -85,6 +85,11 @@ class BinderWrapperImpl @Inject constructor(
 
     }
 
+    override suspend fun isDiscovering(): Boolean {
+        val binder = binderProvider.getAsync()
+        return binder.isDiscovering
+    }
+
     override suspend fun verify(identity: Identity, data: ByteArray, sig: ByteArray): Boolean {
         val binder = binderProvider.getAsync()
 

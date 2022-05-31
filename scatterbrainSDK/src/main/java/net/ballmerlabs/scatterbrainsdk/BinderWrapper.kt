@@ -276,6 +276,14 @@ interface BinderWrapper {
     @Throws(UnauthorizedException::class)
     suspend fun getPackages(): List<NamePackage>
 
+
+    /**
+     * Returns true if the RoutingService is currently discovering
+     * @return true if discovering
+     */
+    @Throws(UnauthorizedException::class)
+    suspend fun isDiscovering(): Boolean
+
     /**
      * Returns a LiveData providing the current connection state
      *
