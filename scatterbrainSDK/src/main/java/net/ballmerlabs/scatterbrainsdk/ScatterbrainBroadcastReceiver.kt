@@ -1,8 +1,10 @@
 package net.ballmerlabs.scatterbrainsdk
 
+import androidx.lifecycle.LiveData
 import net.ballmerlabs.scatterbrainsdk.internal.AsyncCallback
 
 interface ScatterbrainBroadcastReceiver {
+    fun observeRouterState(): LiveData<RouterState>
     fun register()
     fun unregister()
     fun addOnReceiveCallback(r: suspend (HandshakeResult) -> Unit)

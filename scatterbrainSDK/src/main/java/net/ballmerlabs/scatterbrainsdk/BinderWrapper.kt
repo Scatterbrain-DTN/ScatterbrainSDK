@@ -314,6 +314,11 @@ interface BinderWrapper {
     suspend fun rescanPeers()
 
     /**
+     * Observe router state
+     */
+    fun observeRouterState(): LiveData<RouterState>
+
+    /**
      * Checks if this SDK is connected to a running Scatterbrain router
      * @return true if connected
      */

@@ -85,6 +85,10 @@ class BinderWrapperImpl @Inject constructor(
 
     }
 
+    override fun observeRouterState(): LiveData<RouterState> {
+        return broadcastReceiver.observeRouterState()
+    }
+
     override suspend fun isDiscovering(): Boolean {
         val binder = binderProvider.getAsync()
         return binder.isDiscovering
