@@ -9,6 +9,7 @@ plugins {
 }
 
 apply from: '../scripts/version.gradle'
+apply from: "../gradle/jacoco.gradle"
 
 ext {
     PUBLISH_GROUP_ID = "net.ballmerlabs.scatterbrainsdk"
