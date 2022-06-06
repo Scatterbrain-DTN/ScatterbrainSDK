@@ -1,7 +1,7 @@
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.5"
+    toolVersion = "0.8.7"
 }
 
 private static boolean isAndroidModule(Project project) {
@@ -61,7 +61,7 @@ def setupAndroidReporting() {
                 dir: "$buildDir/tmp/kotlin-classes/debug",
                 excludes: fileFilter
         )
-        def mainSrc = "$projectDir/src/main/java"
+        def mainSrc = "$projectDir/app/src/main/java"
         sourceDirectories.from = files([mainSrc])
         classDirectories.from = files([debugTree])
         executionData.from = fileTree(
@@ -71,16 +71,5 @@ def setupAndroidReporting() {
                         'outputs/code-coverage/connected/*coverage.ec'
                 ]
         )
-    }
-}
-
-
-configurations.all {
-    resolutionStrategy {
-        eachDependency {
-            if ("org.jacoco" == requested.group) {
-                useVersion("0.8.7")
-            }
-        }
     }
 }
