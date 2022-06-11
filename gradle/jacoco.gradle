@@ -37,7 +37,7 @@ def setupAndroidReporting() {
     }
     task jacocoTestReport(
             type: JacocoReport,
-            dependsOn: ['testDebugUnitTest']
+            dependsOn: ['testDebugUnitTest', 'connectedDebugAndroidTest']
     ) {
         reports {
             csv.enabled true
