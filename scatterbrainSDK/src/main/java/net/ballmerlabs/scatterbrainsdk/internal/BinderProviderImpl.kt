@@ -72,7 +72,6 @@ class BinderProviderImpl @Inject constructor(
             bindIntent.`package` = BinderWrapper.BIND_PACKAGE
             context.bindService(bindIntent, callback, 0)
         } else {
-            startConnected()
             ret.resume(Unit)
         }
 
