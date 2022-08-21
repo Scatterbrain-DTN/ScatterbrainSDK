@@ -18,7 +18,7 @@ ext {
 }
 
 android {
-    buildToolsVersion "30.0.3"
+    buildToolsVersion '32.0.0'
     defaultConfig {
         minSdkVersion 27
         targetSdkVersion 33
@@ -50,6 +50,7 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+    compileSdk 33
 }
 
 dependencies {
