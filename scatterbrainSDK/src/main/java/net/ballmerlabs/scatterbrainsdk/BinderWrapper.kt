@@ -56,7 +56,7 @@ interface BinderWrapper {
      * @return list of message objects for application
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String): Flow<ScatterMessage>
 
     /**
      * returns a list of all stored messages for a given application after a given date.
@@ -66,7 +66,7 @@ interface BinderWrapper {
      * @return list of messages objects
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String, since: Date): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String, since: Date): Flow<ScatterMessage>
 
     /**
      * returns a list of all stored messages for a given application between two dates.
@@ -77,7 +77,7 @@ interface BinderWrapper {
      * @return list of message objects
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String, start: Date, end: Date): List<ScatterMessage>
+    suspend fun getScatterMessages(application: String, start: Date, end: Date): Flow<ScatterMessage>
 
     /**
      * returns an asynchronous flow of identities received after this function is called

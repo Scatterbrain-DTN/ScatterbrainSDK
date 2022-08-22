@@ -3,7 +3,11 @@ package net.ballmerlabs.scatterbrainsdk
 import android.net.Uri
 import android.os.*
 import android.webkit.MimeTypeMap
+import androidx.core.os.ParcelCompat
+import androidx.versionedparcelable.ParcelUtils
+import kotlinx.android.parcel.Parcelize
 import net.ballmerlabs.scatterbrainsdk.ScatterMessage.Builder
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
