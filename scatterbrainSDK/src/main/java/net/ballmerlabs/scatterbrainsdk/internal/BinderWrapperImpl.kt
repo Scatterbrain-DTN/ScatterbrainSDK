@@ -11,9 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.suspendCancellableCoroutine
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
@@ -49,22 +47,23 @@ class BinderWrapperImpl @Inject constructor(
     override suspend fun getIdentity(fingerprint: UUID): Identity? {
         val binder = binderProvider.getAsync()
 
-        return suspendCancellableCoroutine { c ->
+        return callbackFlow {
             binder.getIdentity(ParcelUuid(fingerprint), object : IdentityCallback.Stub() {
                 override fun onError(error: String) {
-                    c.resumeWithException(IllegalStateException(error))
+                    cancel(error)
                 }
 
-                override fun onIdentity(identity: MutableList<Identity>) {
-                    if (identity.size > 1) {
-                        c.resumeWithException(IllegalStateException("fingerprint collision. Im reaally sorry"))
-                    } else {
-                        c.resume(identity.firstOrNull())
-                    }
+                override fun onIdentity(identity: Identity) {
+                    trySend(identity)
                 }
 
+                override fun onComplete() {
+                    close()
+                }
             })
-        }
+
+            awaitClose {  }
+        }.firstOrNull()
     }
 
 
@@ -242,22 +241,22 @@ class BinderWrapperImpl @Inject constructor(
 
     override suspend fun generateIdentity(name: String): Identity {
         val binder = binderProvider.getAsync()
-        return suspendCancellableCoroutine { c ->
+        return callbackFlow {
             binder.generateIdentity(name, object : IdentityCallback.Stub() {
                 override fun onError(error: String) {
-                    c.resumeWithException(IllegalStateException(error))
+                    cancel(error)
                 }
 
-                override fun onIdentity(identity: MutableList<Identity>) {
-                    if (identity.size != 1) {
-                        c.resumeWithException(IllegalStateException("wrong identity count"))
-                    } else {
-                        c.resume(identity[0])
-                    }
+                override fun onIdentity(identity: Identity) {
+                    trySend(identity)
                 }
 
+                override fun onComplete() {
+                    close()
+                }
             })
-        }
+            awaitClose {  }
+        }.firstOrNull()!!
     }
 
     override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
