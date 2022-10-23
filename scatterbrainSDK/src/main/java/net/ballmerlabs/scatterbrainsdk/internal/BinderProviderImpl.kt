@@ -9,6 +9,8 @@ import android.os.RemoteException
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -68,9 +70,21 @@ class BinderProviderImpl @Inject constructor(
 
     private suspend fun bindServiceWithoutTimeout(): Unit = suspendCancellableCoroutine { ret ->
         if (binder == null) {
+            val observer = object :  Observer<BinderWrapper.Companion.BinderState> {
+                override fun onChanged(t: BinderWrapper.Companion.BinderState?) {
+                    if(t == BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
+                        ret.resume(Unit)
+                        connectionLiveData.removeObserver(this)
+                    }
+                }
+
+            }
+
+            ret.invokeOnCancellation { connectionLiveData.removeObserver(observer) }
             val bindIntent = Intent(BinderWrapper.BIND_ACTION)
             bindIntent.`package` = BinderWrapper.BIND_PACKAGE
             context.bindService(bindIntent, callback, 0)
+            connectionLiveData.observeForever(observer)
         } else {
             ret.resume(Unit)
         }

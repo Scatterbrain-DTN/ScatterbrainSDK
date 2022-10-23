@@ -30,14 +30,15 @@ class BinderWrapperImpl @Inject constructor(
     val context: Context,
     private val broadcastReceiver: ScatterbrainBroadcastReceiver,
     private val binderProvider: BinderProvider,
-    @Named(SCOPE_DEFAULT) private val defaultScope: CoroutineScope
 ) : BinderWrapper {
 
     override suspend fun startService() {
-        val startIntent = Intent(BIND_ACTION)
-        startIntent.`package` = BIND_PACKAGE
+        if (!isConnected()) {
+            val startIntent = Intent(BIND_ACTION)
+            startIntent.`package` = BIND_PACKAGE
 
-        ContextCompat.startForegroundService(context, startIntent)
+            ContextCompat.startForegroundService(context, startIntent)
+        }
     }
 
     override suspend fun unbindService() {
