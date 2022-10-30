@@ -87,7 +87,7 @@ interface BinderWrapper {
      */
     @ExperimentalCoroutinesApi
     @Throws(UnauthorizedException::class)
-    suspend fun observeIdentities(): Flow<List<Identity>>
+    fun observeIdentities(): Flow<List<Identity>>
 
     /**
      * returns an asynchronous flow of all messages received after this functions is called
@@ -98,7 +98,7 @@ interface BinderWrapper {
      */
     @ExperimentalCoroutinesApi
     @Throws(UnauthorizedException::class)
-    suspend fun observeMessages(application: String): Flow<List<ScatterMessage>>
+    fun observeMessages(application: String): Flow<List<ScatterMessage>>
 
     /**
      * generates and returns a scatterbrain identity with ACLs matching the calling application only

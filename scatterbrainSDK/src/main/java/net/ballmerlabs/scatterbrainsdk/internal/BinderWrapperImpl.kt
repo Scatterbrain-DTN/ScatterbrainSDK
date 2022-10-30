@@ -134,7 +134,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    override suspend fun observeIdentities(): Flow<List<Identity>> = callbackFlow {
+    override fun observeIdentities(): Flow<List<Identity>> = callbackFlow {
         trySend(getIdentities())
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.identities > 0) {
@@ -225,7 +225,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    override suspend fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow {
+    override fun observeMessages(application: String): Flow<List<ScatterMessage>> = callbackFlow {
         var now = Date()
         val callback: suspend (handshakeResult: HandshakeResult) -> Unit = { handshakeResult ->
             if (handshakeResult.messages > 0) {
