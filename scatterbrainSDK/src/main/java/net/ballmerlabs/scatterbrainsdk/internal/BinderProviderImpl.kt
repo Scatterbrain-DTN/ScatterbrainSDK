@@ -5,22 +5,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.os.RemoteException
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
-import net.ballmerlabs.scatterbrainsdk.BinderProvider.Companion.mapBinderState
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BinderProviderImpl @Inject constructor(

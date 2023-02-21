@@ -46,9 +46,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
             when (intent.action) {
                 BROADCAST_EVENT -> {
                     val handshakeResult = intent.getParcelableExtra<HandshakeResult>(EXTRA_TRANSACTION_RESULT)
-                    Log.e("debug", "received handshake result")
-
-
                     if (handshakeResult != null) {
                         eventCallbackSet.forEach { h -> h(handshakeResult) }
                     }
@@ -56,7 +53,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
                 STATE_EVENT -> {
                     val state = intent.getParcelableExtra<RouterState>(EXTRA_ROUTER_STATE)
                     if (state != null) {
-                        Log.e("debug", "router state event ${state.state}")
                         routerStateLiveData.postValue(state)
                     }
                 }
