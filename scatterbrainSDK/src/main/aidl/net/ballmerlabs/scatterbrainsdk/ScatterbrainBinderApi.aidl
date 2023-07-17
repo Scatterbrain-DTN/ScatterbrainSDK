@@ -86,4 +86,6 @@ interface ScatterbrainBinderApi {
     oneway void manualRefreshPeers(UnitCallback callback);
 
     oneway void getPermissionsGranted(PermissionCallback callback);
+
+    oneway void exportDatabase(in Uri uri, in UnitCallback callback);
 }

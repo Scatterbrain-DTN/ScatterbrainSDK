@@ -3,6 +3,7 @@ package net.ballmerlabs.scatterbrainsdk.internal
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -453,6 +454,25 @@ class BinderWrapperImpl @Inject constructor(
                 }
 
             })
+        }
+    }
+
+
+    override suspend fun dumpDatastore(uri: Uri?) {
+        val binder = binderProvider.getAsync()
+        if (uri != null) {
+            return suspendCancellableCoroutine { c ->
+                binder.exportDatabase(uri, object : UnitCallback.Stub() {
+                    override fun onError(error: String?) {
+                        c.resumeWithException(IllegalStateException(error))
+                    }
+
+                    override fun onComplete() {
+                        c.resume(Unit)
+                    }
+
+                })
+            }
         }
     }
 

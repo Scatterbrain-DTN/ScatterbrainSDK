@@ -3,6 +3,7 @@ package net.ballmerlabs.scatterbrainsdk
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -317,6 +318,8 @@ interface BinderWrapper {
      * Observe router state
      */
     fun observeRouterState(): LiveData<RouterState>
+
+    suspend fun dumpDatastore(uri: Uri?)
 
     /**
      * Checks if this SDK is connected to a running Scatterbrain router
