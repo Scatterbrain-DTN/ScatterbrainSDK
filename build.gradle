@@ -1,10 +1,9 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
-apply plugin: 'com.dicedmelon.gradle.jacoco-android'
 
 
 buildscript {
-    ext.kotlin_version = '1.7.20'
+    ext.kotlin_version = '1.8.22'
     repositories {
         mavenCentral()
         google()
@@ -15,29 +14,9 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
-        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.5'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
 
-    }
-}
-
-jacoco {
-    toolVersion = "0.8.4"
-}
-
-tasks.withType(Test) {
-    jacoco.includeNoLocationClasses = true
-    jacoco.excludes = ['jdk.internal.*']
-}
-
-configurations.all {
-    resolutionStrategy {
-        eachDependency {
-            if ("org.jacoco" == requested.group) {
-                useVersion("0.8.7")
-            }
-        }
     }
 }

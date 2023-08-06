@@ -1,7 +1,7 @@
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.9"
 }
 
 private static boolean isAndroidModule(Project project) {
@@ -18,14 +18,6 @@ afterEvaluate { project ->
 def setupKotlinReporting() {
     jacocoTestReport {
         dependsOn test
-        reports {
-            csv.enabled true // change if needed
-            xml.enabled true // change if needed
-            html {
-                enabled true
-                destination file("${buildDir}/coverage-report")
-            }
-        }
     }
 }
 
@@ -39,14 +31,6 @@ def setupAndroidReporting() {
             type: JacocoReport,
             dependsOn: ['testDebugUnitTest', 'connectedDebugAndroidTest']
     ) {
-        reports {
-            csv.enabled true
-            xml.enabled true
-            html {
-                enabled true
-                destination file("${buildDir}/coverage-report")
-            }
-        }
         // Change as needed
         def fileFilter = [
                 '**/*App.*',

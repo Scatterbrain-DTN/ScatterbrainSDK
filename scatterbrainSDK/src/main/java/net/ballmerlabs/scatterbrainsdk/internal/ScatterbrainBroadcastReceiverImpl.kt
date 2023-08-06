@@ -2,6 +2,7 @@ package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -70,7 +71,7 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
     }
 
     override fun register() {
-        context.registerReceiver(this, intentFilter)
+        context.registerReceiver(this, intentFilter,RECEIVER_EXPORTED)
     }
 
     override fun unregister() {

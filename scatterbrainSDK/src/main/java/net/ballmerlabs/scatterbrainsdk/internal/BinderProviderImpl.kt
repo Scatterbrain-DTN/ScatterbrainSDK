@@ -67,7 +67,7 @@ class BinderProviderImpl @Inject constructor(
     private suspend fun bindServiceWithoutTimeout(): Unit = suspendCancellableCoroutine { ret ->
         if (binder == null) {
             val observer = object :  Observer<BinderWrapper.Companion.BinderState> {
-                override fun onChanged(t: BinderWrapper.Companion.BinderState?) {
+                override fun onChanged(t: BinderWrapper.Companion.BinderState) {
                     if(t == BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
                         ret.resume(Unit)
                         connectionLiveData.removeObserver(this)
