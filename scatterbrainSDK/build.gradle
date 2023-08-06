@@ -51,6 +51,9 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17
+        freeCompilerArgs = [
+                "-Xstring-concat=inline"
+        ]
     }
     compileSdk 34
     buildFeatures {
