@@ -37,27 +37,32 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
             }
     private val eventCallbackSet = mutableSetOf<suspend (HandshakeResult) -> Unit>()
     private val resultCallbackSet = ConcurrentHashMap<Int, AsyncCallback>()
-    val routerStateLiveData = MutableLiveData(RouterState.OFFLINE)
+    private val routerStateLiveData = MutableLiveData(RouterState.OFFLINE)
     @Inject lateinit var context: Context
     @Named(SCOPE_DEFAULT) @Inject lateinit var coroutineScope: CoroutineScope
 
     override fun onReceive(ctx: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
-        coroutineScope.launch {
-            when (intent.action) {
-                BROADCAST_EVENT -> {
-                    val handshakeResult = intent.getParcelableExtra<HandshakeResult>(EXTRA_TRANSACTION_RESULT)
-                    if (handshakeResult != null) {
-                        eventCallbackSet.forEach { h -> h(handshakeResult) }
+        if (this::coroutineScope.isInitialized) {
+            coroutineScope.launch {
+                when (intent.action) {
+                    BROADCAST_EVENT -> {
+                        val handshakeResult =
+                            intent.getParcelableExtra<HandshakeResult>(EXTRA_TRANSACTION_RESULT)
+                        if (handshakeResult != null) {
+                            eventCallbackSet.forEach { h -> h(handshakeResult) }
+                        }
                     }
-                }
-                STATE_EVENT -> {
-                    val state = intent.getParcelableExtra<RouterState>(EXTRA_ROUTER_STATE)
-                    if (state != null) {
-                        routerStateLiveData.postValue(state)
+
+                    STATE_EVENT -> {
+                        val state = intent.getParcelableExtra<RouterState>(EXTRA_ROUTER_STATE)
+                        if (state != null) {
+                            routerStateLiveData.postValue(state)
+                        }
                     }
+
+                    else -> Log.e(TAG, "invalid action ${intent.action}")
                 }
-                else -> Log.e(TAG, "invalid action ${intent.action}")
             }
         }
     }
