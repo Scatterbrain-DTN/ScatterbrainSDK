@@ -31,7 +31,11 @@ class BinderWrapperImpl @Inject constructor(
     val context: Context,
     private val broadcastReceiver: ScatterbrainBroadcastReceiver,
     private val binderProvider: BinderProvider,
+    @Named(SCOPE_DEFAULT) private val defaultScope: CoroutineScope
 ) : BinderWrapper {
+
+    override val coroutineScope: CoroutineScope
+        get() = defaultScope
 
     override suspend fun startService() {
         if (!isConnected()) {

@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.lifecycle.LiveData
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -326,6 +327,9 @@ interface BinderWrapper {
      * @return true if connected
      */
     suspend fun isConnected(): Boolean
+
+    val coroutineScope: CoroutineScope
+
     companion object {
         const val TAG = "BinderWrapper"
         const val BIND_ACTION = "net.ballmerlabs.uscatterbrain.ScatterRoutingService.BIND"
