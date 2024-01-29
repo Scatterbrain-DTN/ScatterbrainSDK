@@ -1,9 +1,5 @@
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
-
-
 buildscript {
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = '1.9.22'
     repositories {
         mavenCentral()
         google()
@@ -20,4 +16,11 @@ buildscript {
 
     }
 }
+plugins {
+    id 'com.google.devtools.ksp' version '1.9.22-1.0.17' apply false
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
 apply plugin: 'io.github.gradle-nexus.publish-plugin'
