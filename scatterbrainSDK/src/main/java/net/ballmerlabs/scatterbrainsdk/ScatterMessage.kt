@@ -2,6 +2,7 @@ package net.ballmerlabs.scatterbrainsdk
 
 import android.net.Uri
 import android.os.*
+import android.util.Log
 import android.webkit.MimeTypeMap
 import net.ballmerlabs.scatterbrainsdk.ScatterMessage.Builder
 import java.io.File
@@ -68,7 +69,6 @@ class ScatterMessage private constructor(
             val buf = shm.mapReadOnly()
             val bytes = ByteArray(buf.remaining())
             buf.get(bytes)
-            shm.close()
             bytes
         }
     }
@@ -105,12 +105,15 @@ class ScatterMessage private constructor(
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
         parcel.writeParcelable(id, i)
-        shm?.close()
     }
 
 
     protected fun finalize() {
-        shm?.close()
+        try {
+            shm?.close()
+        } catch (exc: Exception) {
+            Log.w("debug", "failed to close shm")
+        }
     }
 
     /**
