@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -76,7 +77,11 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor(): BroadcastReceiver
     }
 
     override fun register() {
-        context.registerReceiver(this, intentFilter,RECEIVER_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(this, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            context.registerReceiver(this, intentFilter)
+        }
     }
 
     override fun unregister() {
