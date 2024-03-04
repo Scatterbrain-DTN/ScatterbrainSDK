@@ -75,7 +75,10 @@ class ScatterMessage private constructor(
     }
 
     private constructor(parcel: Parcel): this(
-            shm = parcel.readParcelable(ShmCompat::class.java.classLoader),
+            shm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
+                ShmSharedMemory.createFromParcel(parcel)
+            else
+                ShmFile.createFromParcel(parcel),
             fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
