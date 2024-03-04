@@ -9,11 +9,13 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import net.ballmerlabs.scatterbrainsdk.*
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
@@ -38,11 +40,13 @@ class BinderWrapperImpl @Inject constructor(
         get() = defaultScope
 
     override suspend fun startService() {
-        if (!isConnected()) {
-            val startIntent = Intent(BIND_ACTION)
-            startIntent.`package` = BIND_PACKAGE
+        withContext(Dispatchers.Main) {
+            if (!isConnected()) {
+                val startIntent = Intent(BIND_ACTION)
+                startIntent.`package` = BIND_PACKAGE
 
-            ContextCompat.startForegroundService(context, startIntent)
+                ContextCompat.startForegroundService(context, startIntent)
+            }
         }
     }
 

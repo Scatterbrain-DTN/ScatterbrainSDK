@@ -23,7 +23,7 @@ class ShmSharedMemory(private val sharedMemory: SharedMemory) : ShmCompat {
     }
 
     override fun writeToParcel(p0: Parcel, p1: Int) {
-        sharedMemory.writeToParcel(p0, p1)
+        p0.writeParcelable(sharedMemory, p1)
     }
 
     override fun describeContents(): Int {

@@ -75,7 +75,7 @@ class ScatterMessage private constructor(
     }
 
     private constructor(parcel: Parcel): this(
-            shm = parcel.readParcelable(ParcelFileDescriptor::class.java.classLoader),
+            shm = parcel.readParcelable(ShmCompat::class.java.classLoader),
             fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
