@@ -2,6 +2,21 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
 
+
+tasks.withType(dokkaHtmlPartial.getClass()).configureEach {
+    pluginsMapConfiguration.set(
+            ["org.jetbrains.dokka.base.DokkaBase": """{ "separateInheritedMembers": true}"""]
+    )
+}
+
+group = PUBLISH_GROUP_ID
+version = PUBLISH_VERSION
+
+task androidJavadocsJar(type: Jar, dependsOn: dokkaJavadoc){
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
+}
+
 task androidSourcesJar(type: Jar) {
     archiveClassifier.set('sources')
     if (project.plugins.findPlugin("com.android.library")) {
@@ -13,24 +28,23 @@ task androidSourcesJar(type: Jar) {
     }
 }
 
-tasks.withType(dokkaHtmlPartial.getClass()).configureEach {
-    pluginsMapConfiguration.set(
-            ["org.jetbrains.dokka.base.DokkaBase": """{ "separateInheritedMembers": true}"""]
-    )
+tasks.named("dokkaJavadoc") {
+    mustRunAfter("kaptReleaseKotlin")
 }
 
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    archiveClassifier.set('javadoc')
-    from dokkaJavadoc.outputDirectory
+tasks.named("androidSourcesJar") {
+    mustRunAfter("kaptReleaseKotlin")
+}
+
+
+tasks.named("androidSourcesJar") {
+    mustRunAfter("generateMetadataFileForReleasePublication")
 }
 
 artifacts {
     archives androidSourcesJar
-    archives javadocJar
+    archives androidJavadocsJar
 }
-
-group = PUBLISH_GROUP_ID
-version = PUBLISH_VERSION
 
 afterEvaluate {
     publishing {
@@ -39,14 +53,9 @@ afterEvaluate {
                 groupId PUBLISH_GROUP_ID
                 artifactId PUBLISH_ARTIFACT_ID
                 version PUBLISH_VERSION
-                if (project.plugins.findPlugin("com.android.library")) {
-                    from components.release
-                } else {
-                    from components.java
-                }
 
                 artifact androidSourcesJar
-                artifact javadocJar
+                artifact androidJavadocsJar
 
                 pom {
                     name = PUBLISH_ARTIFACT_ID

@@ -16,15 +16,18 @@ open class HandshakeResult : Parcelable {
         STATUS_SUCCESS, STATUS_FAIL
     }
 
+    var metrics: List<ApiMetrics> = listOf()
+
     protected constructor(parcel: Parcel) {
         identities = parcel.readInt()
         messages = parcel.readInt()
-        status = TransactionStatus.values()[parcel.readInt()]
+        status = TransactionStatus.entries.toTypedArray()[parcel.readInt()]
+        metrics = parcel.readParcelableArray(ApiMetrics::class.java.classLoader)?.map { v -> v as ApiMetrics }?.toList()?: listOf()
     }
 
     val success: Boolean
         get() = status == TransactionStatus.STATUS_SUCCESS
-    val identities: Int
+    var identities: Int
     val messages: Int
     val status: TransactionStatus
 
@@ -60,6 +63,7 @@ open class HandshakeResult : Parcelable {
         parcel.writeInt(identities)
         parcel.writeInt(messages)
         parcel.writeInt(status.ordinal)
+        parcel.writeParcelableArray(metrics.toTypedArray(), i)
     }
 
     companion object {

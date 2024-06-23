@@ -3,9 +3,21 @@ package net.ballmerlabs.scatterbrainsdk
 import android.os.Parcel
 import android.os.ParcelUuid
 import android.os.Parcelable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toImmutableMap
+import net.ballmerlabs.scatterbrainsdk.internal.b64
 import net.ballmerlabs.scatterbrainsdk.internal.readParcelableMap
 import net.ballmerlabs.scatterbrainsdk.internal.writeParcelableMap
 import java.util.*
+
+fun parcelArray(parcel: Parcel): ByteArray {
+    val s = ByteArray(parcel.readInt())
+    parcel.readByteArray(s)
+    return s
+}
+const val PROTOBUF_PRIVKEY_KEY = "scatterbrain"
 
 /**
  * A handle to a cryptographic identity stored in the Scatterbrain
@@ -20,50 +32,40 @@ import java.util.*
  * @property name user-defined name
  * @property isOwned true if this identity has a private key
  */
-open class Identity : Parcelable {
-    val extraKeys: Map<String, ByteArray>
-    val publicKey: ByteArray
-    val name: String
-    val sig: ByteArray
-    val fingerprint: UUID
+@Stable
+data class Identity(
+    @Stable
+    val extraKeys: ImmutableMap<String, ByteArray>,
+    @Stable
+    val publicKey: ByteArray = extraKeys[PROTOBUF_PRIVKEY_KEY]!!,
+    @Stable
+    val name: String,
+    @Stable
+    val sig: ByteArray,
+    @Stable
+    val fingerprint: UUID,
+    @Stable
     val isOwned: Boolean
-
-    constructor(
-            map: Map<String, ByteArray>,
-            pub: ByteArray,
-            name: String,
-            sig: ByteArray,
-            fingerprint: UUID,
-            hasPrivateKey: Boolean
-    ) {
-        extraKeys = map
-        publicKey = pub
-        this.name = name
-        this.sig = sig
-        this.fingerprint = fingerprint
-        this.isOwned = hasPrivateKey
-    }
-
-    protected constructor(inParcel: Parcel) {
+): Parcelable {
+     constructor(inParcel: Parcel): this(
         extraKeys = readParcelableMap(inParcel) { parcel ->
             val len = parcel.readInt()
             val key = ByteArray(len)
             parcel.readByteArray(key)
             AbstractMap.SimpleEntry(parcel.readString()!!, key)
-        }
-        publicKey = extraKeys[ScatterbrainApi.PROTOBUF_PRIVKEY_KEY]!!
-        name = inParcel.readString()!!
-        sig = ByteArray(inParcel.readInt())
-        inParcel.readByteArray(sig)
-        val uuid = inParcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)
-        fingerprint = uuid!!.uuid
+        }.toImmutableMap(),
+        name = inParcel.readString()!!,
+        sig = parcelArray(inParcel),
+        fingerprint = inParcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)!!.uuid!!,
         isOwned = hasKey(inParcel.readByte().toInt())
-    }
+    )
 
+    @Stable
     override fun describeContents(): Int {
         return 0
     }
 
+    @Stable
     override fun writeToParcel(parcel: Parcel, i: Int) {
         writeParcelableMap(extraKeys, parcel, i) { mapentry, p, _ ->
             p.writeInt(mapentry.value.size)
@@ -77,6 +79,52 @@ open class Identity : Parcelable {
         parcel.writeByte(hasKey(isOwned))
     }
 
+    @Stable
+    override fun toString(): String {
+        var id = "Identity(" +
+                "sig=${this.sig.b64()}\n" +
+                "pubkey=${this.publicKey.b64()}\n" +
+                "name=${this.name}\n" +
+                "isOwned=${this.isOwned}\n" +
+                "fingerprint=${this.fingerprint.toString()}"
+
+        for ((k, v) in extraKeys) {
+            id += "     ($k, ${v.b64()})\n"
+        }
+        return id
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+
+        other as Identity
+
+        if (extraKeys.keys.any { k -> !other.extraKeys.containsKey(k) || !other.extraKeys[k].contentEquals(
+                extraKeys[k]
+            ) }) return false
+
+        if (!publicKey.contentEquals(other.publicKey)) return false
+        if (name != other.name) return false
+        if (!sig.contentEquals(other.sig)) return false
+        if (fingerprint != other.fingerprint) return false
+        if (isOwned != other.isOwned) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = 0
+        extraKeys.forEach { (k, v) ->
+            result = 31 * result + k.hashCode()
+            result = 31 * result + v.contentHashCode()
+        }
+        result = 31 * result + publicKey.contentHashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + sig.contentHashCode()
+        result = 31 * result + fingerprint.hashCode()
+        result = 31 * result + isOwned.hashCode()
+        return result
+    }
     companion object {
         @JvmField
         val CREATOR: Parcelable.Creator<Identity> = object : Parcelable.Creator<Identity> {
@@ -89,11 +137,11 @@ open class Identity : Parcelable {
             }
         }
 
-        private fun hasKey(`val`: Int): Boolean {
+        fun hasKey(`val`: Int): Boolean {
             return `val` == 0
         }
 
-        private fun hasKey(`val`: Boolean): Byte {
+        fun hasKey(`val`: Boolean): Byte {
             return if (`val`) {
                 0
             } else {

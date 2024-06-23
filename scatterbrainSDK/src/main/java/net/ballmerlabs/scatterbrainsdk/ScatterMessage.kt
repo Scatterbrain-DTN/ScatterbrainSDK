@@ -1,9 +1,13 @@
 package net.ballmerlabs.scatterbrainsdk
 
+import android.content.Context
 import android.net.Uri
 import android.os.*
+import android.util.Log
 import android.webkit.MimeTypeMap
 import net.ballmerlabs.scatterbrainsdk.ScatterMessage.Builder
+import net.ballmerlabs.scatterbrainsdk.internal.readBool
+import net.ballmerlabs.scatterbrainsdk.internal.writeBool
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
@@ -23,14 +27,6 @@ private fun readByteArray(parcel: Parcel): ByteArray {
     return b
 }
 
-private fun boolConvert(int: Int): Boolean {
-    return int != 0
-}
-
-private fun boolConvert(boolean: Boolean): Int {
-    return if (boolean) 1 else 0
-}
-
 /**
  * Represents a messages sent or received via Scatterbrain.
  * @property Builder builder class to construct an instance of ScatterMessage
@@ -46,8 +42,8 @@ private fun boolConvert(boolean: Boolean): Int {
  * @property isFile if this message contains a file descriptor, if false message contains inline bytes
  * @property id a unique id referring to this message, valid within the local router only
  */
-class ScatterMessage private constructor(
-        val shm: SharedMemory?,
+data class ScatterMessage(
+        val shm: ShmCompat?,
         val fromFingerprint: UUID?,
         val toFingerprint: UUID?,
         val application: String,
@@ -65,16 +61,18 @@ class ScatterMessage private constructor(
         if (shm == null) {
             null
         } else {
-            val buf = shm.mapReadOnly()
+            val buf = shm.readOnly()
             val bytes = ByteArray(buf.remaining())
             buf.get(bytes)
-            shm.close()
             bytes
         }
     }
 
     private constructor(parcel: Parcel): this(
-            shm = parcel.readParcelable(SharedMemory::class.java.classLoader),
+            shm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1)
+                parcel.readParcelable<ShmSharedMemory>(ShmSharedMemory::class.java.classLoader)
+            else
+                parcel.readParcelable<ShmFile>(ShmFile::class.java.classLoader),
             fromFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             toFingerprint = parcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)?.uuid,
             application = parcel.readString()!!,
@@ -82,7 +80,7 @@ class ScatterMessage private constructor(
             mime =  parcel.readString()!!,
             filename =  parcel.readString()!!,
             fileDescriptor = parcel.readParcelable(ParcelFileDescriptor::class.java.classLoader),
-            isFile = boolConvert(parcel.readInt()),
+            isFile = parcel.readBool(),
             sendDate = Date(parcel.readLong()),
             receiveDate = Date(parcel.readLong()),
             id = parcel.readParcelable(ParcelUuid::class.java.classLoader)!!
@@ -101,16 +99,19 @@ class ScatterMessage private constructor(
         parcel.writeString(mime)
         parcel.writeString(filename)
         parcel.writeParcelable(fileDescriptor, i)
-        parcel.writeInt(boolConvert(isFile))
+        parcel.writeBool(isFile)
         parcel.writeLong(sendDate.time)
         parcel.writeLong(receiveDate.time)
         parcel.writeParcelable(id, i)
-        shm?.close()
     }
 
 
     protected fun finalize() {
-        shm?.close()
+        try {
+            shm?.close()
+        } catch (exc: Exception) {
+            Log.w("debug", "failed to close shm")
+        }
     }
 
     /**
@@ -118,7 +119,7 @@ class ScatterMessage private constructor(
      *
      */
     open class Builder protected constructor(
-            private var shm: SharedMemory? = null,
+            private var shm: ShmCompat? = null,
             protected var fromFingerprint: UUID? = null,
             private var toFingerprint: UUID? = null,
             private var application: String? = null,
@@ -133,7 +134,7 @@ class ScatterMessage private constructor(
             private var receiveDate: Date = Date(0L),
             private var id: ParcelUuid? = null
     ) {
-        protected fun setShm(body: SharedMemory?) = apply {
+        protected fun setShm(body: ShmCompat?) = apply {
             this.shm = body
             todisk = false
         }
@@ -220,10 +221,8 @@ class ScatterMessage private constructor(
              * @param data payload for this message
              * @return builder class
              */
-            fun newInstance(data: ByteArray): Builder {
-                val shared = SharedMemory.create("scatterMessage", data.size)
-                val buf = shared.mapReadWrite()
-                buf.put(data)
+            fun newInstance(context: Context, data: ByteArray): Builder {
+                val shared = context.newShm("scatterbrain", data)
                 return Builder().setShm(shared)
             }
 

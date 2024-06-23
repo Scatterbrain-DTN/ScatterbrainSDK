@@ -3,11 +3,18 @@ package net.ballmerlabs.scatterbrainsdk
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.ParcelUuid
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.LiveData
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import net.ballmerlabs.scatterbrainsdk.internal.SbApp
 import java.util.*
 
 /**
@@ -56,7 +63,7 @@ interface BinderWrapper {
      * @return list of message objects for application
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String): Flow<ScatterMessage>
+    suspend fun getScatterMessages(application: String, limit: Int = -1): Flow<ScatterMessage>
 
     /**
      * returns a list of all stored messages for a given application after a given date.
@@ -66,7 +73,7 @@ interface BinderWrapper {
      * @return list of messages objects
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String, since: Date): Flow<ScatterMessage>
+    suspend fun getScatterMessages(application: String, since: Date, limit: Int = -1): Flow<ScatterMessage>
 
     /**
      * returns a list of all stored messages for a given application between two dates.
@@ -77,7 +84,7 @@ interface BinderWrapper {
      * @return list of message objects
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getScatterMessages(application: String, start: Date, end: Date): Flow<ScatterMessage>
+    suspend fun getScatterMessages(application: String, start: Date, end: Date, limit: Int = -1): Flow<ScatterMessage>
 
     /**
      * returns an asynchronous flow of identities received after this function is called
@@ -98,7 +105,7 @@ interface BinderWrapper {
      */
     @ExperimentalCoroutinesApi
     @Throws(UnauthorizedException::class)
-    fun observeMessages(application: String): Flow<List<ScatterMessage>>
+    fun observeMessages(application: String, limit: Int = -1): LiveData<List<ScatterMessage>>
 
     /**
      * generates and returns a scatterbrain identity with ACLs matching the calling application only
@@ -276,6 +283,13 @@ interface BinderWrapper {
     @Throws(UnauthorizedException::class)
     suspend fun getPackages(): List<NamePackage>
 
+    @Throws(UnauthorizedException::class)
+    suspend fun randomizeLuid()
+
+
+    @Throws(UnauthorizedException::class)
+    suspend fun authorizeDesktop(fingerprint: ByteArray, authorize: Boolean)
+
 
     /**
      * Returns true if the RoutingService is currently discovering
@@ -303,6 +317,21 @@ interface BinderWrapper {
     fun unregister()
 
     /**
+     * observes desktop pairing attempts
+     * This should only be used by clients with PERMISSION_SUPERUSER
+     */
+    fun observePairingAttempts(): LiveData<PairingState>
+
+    /**
+     *
+     */
+
+    /**
+     * Observes the current luid
+     */
+    fun observeLuid(): LiveData<ParcelUuid>
+
+    /**
      * Attempts a connection to the scatterbrain service
      */
     suspend fun bindService(timeout: Long = 5000L)
@@ -318,11 +347,33 @@ interface BinderWrapper {
      */
     fun observeRouterState(): LiveData<RouterState>
 
+    suspend fun dumpDatastore(uri: Uri?)
+
     /**
      * Checks if this SDK is connected to a running Scatterbrain router
      * @return true if connected
      */
     suspend fun isConnected(): Boolean
+
+    /**
+     * Returns a LiveData that emits periodic aggregate statistics
+     */
+    fun observeMetrics(): LiveData<HandshakeResult>
+
+    suspend fun getMetrics(): HandshakeResult
+
+    suspend fun startDesktopApi(name: String)
+
+    suspend fun stopDesktopApi()
+
+    suspend fun approveDesktopIdentity(handle: UUID, identity: UUID)
+
+    suspend fun getApps(): List<SbApp>
+
+    fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
+
+    val coroutineScope: CoroutineScope
+
     companion object {
         const val TAG = "BinderWrapper"
         const val BIND_ACTION = "net.ballmerlabs.uscatterbrain.ScatterRoutingService.BIND"

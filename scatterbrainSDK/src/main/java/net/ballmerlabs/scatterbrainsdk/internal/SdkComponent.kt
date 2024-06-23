@@ -15,7 +15,7 @@ const val SCOPE_DEFAULT = "defaultScope"
 
 @Singleton
 @Component(modules = [SdkComponent.SdkModule::class])
-internal interface SdkComponent {
+interface SdkComponent {
 
     @Component.Builder
     interface Builder {
@@ -36,7 +36,6 @@ internal interface SdkComponent {
         abstract fun bindScatterbrainBroadcastReceiver(
                 broadcastReceiver: ScatterbrainBroadcastReceiverImpl
         ) : ScatterbrainBroadcastReceiver
-
 
         @Binds
         @Singleton

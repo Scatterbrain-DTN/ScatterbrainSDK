@@ -1,6 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk.internal
 
 import android.os.Parcel
+import java.util.Base64
 
 
 fun interface ParcelWriter<T> {
@@ -8,6 +9,18 @@ fun interface ParcelWriter<T> {
             value: T,
             parcel: Parcel, flags: Int
     )
+}
+
+fun Parcel.readBool(): Boolean {
+    return readInt() != 0
+}
+
+fun Parcel.writeBool(boolean: Boolean) {
+    writeInt(if (boolean) 1 else 0)
+}
+
+fun ByteArray.b64(): String {
+    return Base64.getUrlEncoder().encodeToString(this)
 }
 
 fun interface ParcelReader<T> {

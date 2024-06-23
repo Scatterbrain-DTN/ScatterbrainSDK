@@ -9,22 +9,30 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainBinderApi
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class BinderProviderImpl @Inject constructor(
-        val context: Context
+    val context: Context,
+    @Named(SCOPE_DEFAULT) val scope: CoroutineScope
 ): BinderProvider {
 
     private var binder: ScatterbrainBinderApi? = null
     private val connectionLiveData = MutableLiveData(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
+    private val connectionCbs = ConcurrentLinkedQueue<(BinderWrapper.Companion.BinderState) -> Unit>()
 
     private val callback = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -55,32 +63,38 @@ class BinderProviderImpl @Inject constructor(
     private fun startConnected() {
         if (connectionLiveData.value != BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
             connectionLiveData.postValue(BinderWrapper.Companion.BinderState.STATE_CONNECTED)
+            var cb = connectionCbs.poll()
+            while (cb != null) {
+                cb(BinderWrapper.Companion.BinderState.STATE_CONNECTED)
+                cb = connectionCbs.poll()
+            }
         }
     }
 
     private fun startDisconnected() {
         if(connectionLiveData.value != BinderWrapper.Companion.BinderState.STATE_DISCONNECTED) {
             connectionLiveData.postValue(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
+            var cb = connectionCbs.poll()
+            while (cb != null) {
+                cb(BinderWrapper.Companion.BinderState.STATE_DISCONNECTED)
+                cb = connectionCbs.poll()
+            }
         }
     }
 
     private suspend fun bindServiceWithoutTimeout(): Unit = suspendCancellableCoroutine { ret ->
         if (binder == null) {
-            val observer = object :  Observer<BinderWrapper.Companion.BinderState> {
-                override fun onChanged(t: BinderWrapper.Companion.BinderState?) {
-                    if(t == BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
-                        ret.resume(Unit)
-                        connectionLiveData.removeObserver(this)
-                    }
+            connectionCbs.add { state ->
+                if(state == BinderWrapper.Companion.BinderState.STATE_CONNECTED) {
+                    ret.resume(Unit)
                 }
-
             }
 
-            ret.invokeOnCancellation { connectionLiveData.removeObserver(observer) }
-            val bindIntent = Intent(BinderWrapper.BIND_ACTION)
-            bindIntent.`package` = BinderWrapper.BIND_PACKAGE
-            context.bindService(bindIntent, callback, 0)
-            connectionLiveData.observeForever(observer)
+            scope.launch(Dispatchers.IO) {
+                val bindIntent = Intent(BinderWrapper.BIND_ACTION)
+                bindIntent.`package` = BinderWrapper.BIND_PACKAGE
+                context.bindService(bindIntent, callback, 0)
+            }
         } else {
             ret.resume(Unit)
         }
@@ -122,6 +136,6 @@ class BinderProviderImpl @Inject constructor(
     }
 
     override suspend fun getAsync(timeout: Long): ScatterbrainBinderApi {
-        return bindService(timeout)
+        return withContext(Dispatchers.IO) { bindService(timeout) }
     }
 }

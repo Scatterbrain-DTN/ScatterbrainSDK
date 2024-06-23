@@ -9,6 +9,8 @@ import net.ballmerlabs.scatterbrainsdk.IdentityCallback;
 import net.ballmerlabs.scatterbrainsdk.StringCallback;
 import net.ballmerlabs.scatterbrainsdk.BoolCallback;
 import net.ballmerlabs.scatterbrainsdk.PermissionCallback;
+import net.ballmerlabs.scatterbrainsdk.HandshakeCallback;
+import net.ballmerlabs.scatterbrainsdk.SbAppCallback;
 
 interface ScatterbrainBinderApi {
 
@@ -79,11 +81,30 @@ interface ScatterbrainBinderApi {
 
     oneway void sendAndSignMessagesAsync(in List<ScatterMessage> message, in ParcelUuid identity, UnitCallback callback);
 
-    oneway void getByApplicationAsync(in String application, in ScatterMessageCallback callback);
+    oneway void getByApplicationAsync(in String application, in int limit, in ScatterMessageCallback callback);
 
-    oneway void getByApplicationDateAsync(in String application, long startDate, long endDate, ScatterMessageCallback callback);
+    oneway void getByApplicationDateAsync(in String application, in int limit, long startDate, long endDate, ScatterMessageCallback callback);
 
     oneway void manualRefreshPeers(UnitCallback callback);
 
     oneway void getPermissionsGranted(PermissionCallback callback);
+
+    oneway void getMetrics(HandshakeCallback callback);
+
+    oneway void exportDatabase(in Uri uri, in UnitCallback callback);
+
+    oneway void randomizeLuid(in UnitCallback callback);
+
+    oneway void startDesktopApi(in String name, in UnitCallback callback);
+
+    oneway void stopDesktopApi(in UnitCallback callback);
+
+    oneway void confirmIdentityImport(in ParcelUuid handle, in ParcelUuid identity, in boolean confirm, in UnitCallback callback);
+
+    oneway void respondPairing(in byte[] fingerprint, in boolean authorized, in UnitCallback callback);
+
+    oneway void onAppCallback(in SbAppCallback callback);
+
+    oneway void removeApp(in String id, in UnitCallback callback);
+
 }

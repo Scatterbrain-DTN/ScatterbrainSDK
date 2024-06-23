@@ -19,7 +19,8 @@ enum class RouterState(val state: String) : Parcelable {
 }
 
 class ScatterbrainApi(applicationContext: Context?) {
-    private val sdkComponent: SdkComponent?
+    val sdkComponent: SdkComponent? =
+        DaggerSdkComponent.builder().applicationContext(applicationContext!!)!!.build()
     val binderWrapper: BinderWrapper
         get() = sdkComponent!!.sdk()
     val broadcastReceiver: ScatterbrainBroadcastReceiver
@@ -30,24 +31,29 @@ class ScatterbrainApi(applicationContext: Context?) {
         sdkComponent!!.broadcastReceiver().unregister()
     }
 
+    init {
+        ScatterbrainApi.self = this
+    }
+
     companion object {
         const val MAX_BODY_SIZE = 1024 * 1019 // Binders have 1MB size limit, leave 5kb for metadata
         const val EXTRA_TRANSACTION_RESULT = "transaction_result"
-        const val PROTOBUF_PRIVKEY_KEY = "scatterbrain"
-        const val EXTRA_ASYNC_RESULT = "async_result"
-        const val EXTRA_ASYNC_HANDLE = "async_handle"
-        const val PACKAGE_NAME = "net.ballmerlabs.scatterroutingservice"
+        const val EXTRA_LUID = "luid_update"
+        private const val PACKAGE_NAME = "net.ballmerlabs.scatterroutingservice"
         const val PERMISSION_ACCESS = "net.ballmerlabs.scatterroutingservice.permission.ACCESS"
         const val PERMISSION_ADMIN = "net.ballmerlabs.scatterroutingservice.permission.ADMIN"
         const val PERMISSION_SUPERUSER = "net.ballmerlabs.scatterroutingservice.permission.SUPERUSER"
         const val DEFAULT_MIME = "application/octet-stream"
         const val BROADCAST_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.NETWORK_EVENT"
         const val STATE_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.ROUTER_STATE"
+        const val PAIRING_EVENT = "net.ballmerlabs.scatterroutingservice.broadcast.DESKTOP_PAIRING"
         const val IMPORT_IDENTITY_ACTION = "net.ballmerlabs.scatterroutingservice.IMPORT_IDENTITY_ACTION"
         const val EXTRA_IDENTITY_RESULT = "net.ballmerlabs.scatterroutingservice.EXTRA_IDENTITY_RESULT"
         const val EXTRA_ROUTER_STATE = "net.ballmerlabs.scatterroutingservice.EXTRA_ROUTER_STATE"
         const val EXTRA_NUM_IDENTITIES = "net.ballmerlabs.scatterroutingservice.EXTRA_NUM_IDENTITIES"
-        val IMPORT_IDENTITY_COMPONENT = ComponentName(PACKAGE_NAME, PACKAGE_NAME + ".ui.identity.IdentityImportActivity")
+        val IMPORT_IDENTITY_COMPONENT = ComponentName(PACKAGE_NAME,
+            "$PACKAGE_NAME.ui.identity.IdentityImportActivity"
+        )
         fun getMimeType(file: File): String {
             return if (file.isDirectory) {
                 DocumentsContract.Document.MIME_TYPE_DIR
@@ -62,9 +68,8 @@ class ScatterbrainApi(applicationContext: Context?) {
                 "application/octet-stream"
             }
         }
+
+        var self: ScatterbrainApi? = null
     }
 
-    init {
-        sdkComponent = DaggerSdkComponent.builder().applicationContext(applicationContext!!)!!.build()
-    }
 }
