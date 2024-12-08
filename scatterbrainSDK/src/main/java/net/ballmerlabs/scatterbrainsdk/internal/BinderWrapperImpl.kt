@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import net.ballmerlabs.scatterbrainsdk.Apps
 import net.ballmerlabs.scatterbrainsdk.BinderProvider
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_ACTION
@@ -37,6 +38,7 @@ import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.BIND_PACKAGE
 import net.ballmerlabs.scatterbrainsdk.BinderWrapper.Companion.TAG
 import net.ballmerlabs.scatterbrainsdk.BoolCallback
 import net.ballmerlabs.scatterbrainsdk.ByteArrayCallback
+import net.ballmerlabs.scatterbrainsdk.DesktopApp
 import net.ballmerlabs.scatterbrainsdk.HandshakeCallback
 import net.ballmerlabs.scatterbrainsdk.HandshakeResult
 import net.ballmerlabs.scatterbrainsdk.Identity
@@ -778,12 +780,13 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun getApps(): List<SbApp> {
+    override suspend fun getApps(): Apps {
         return suspendCancellableCoroutine { c ->
+
             defaultScope.launch(Dispatchers.IO) {
                 val binder = binderProvider.getAsync()
                 try {
-                    val res = mutableListOf<SbApp>()
+                    val res = Apps()
                     binder.onAppCallback(object : SbAppCallback.Stub() {
                         override fun onError(error: String) {
                             c.resumeWithException(IllegalStateException(error))
@@ -792,8 +795,61 @@ class BinderWrapperImpl @Inject constructor(
                         override fun onApp(result: SbApp?) {
                             when(result) {
                                 null -> c.resume(res)
-                                else -> res.add(result)
+                                else -> res.mobile.add(result)
                             }
+                        }
+
+                        override fun onDesktopApp(result: DesktopApp?) {
+                            when(result) {
+                                null -> c.resume(res)
+                                else -> res.desktop.add(result)
+                            }
+                        }
+
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+
+    override suspend fun deleteAndroidApp(id: String) {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.removeApp(id, object : UnitCallback.Stub() {
+                        override fun onError(error: String) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
+                        }
+
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+
+    override suspend fun deleteDesktopApp(publicKey: ByteArray) {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.removeDesktopApp(publicKey, object : UnitCallback.Stub() {
+                        override fun onError(error: String) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
                         }
 
                     })

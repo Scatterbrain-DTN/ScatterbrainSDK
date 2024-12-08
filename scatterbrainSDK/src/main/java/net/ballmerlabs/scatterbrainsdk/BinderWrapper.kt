@@ -15,6 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.ballmerlabs.scatterbrainsdk.internal.SbApp
+import java.security.PublicKey
 import java.util.*
 
 /**
@@ -368,7 +369,11 @@ interface BinderWrapper {
 
     suspend fun approveDesktopIdentity(handle: UUID, identity: UUID)
 
-    suspend fun getApps(): List<SbApp>
+    suspend fun deleteDesktopApp(publicKey: ByteArray)
+
+    suspend fun deleteAndroidApp(id: String)
+
+    suspend fun getApps(): Apps
 
     fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
 
