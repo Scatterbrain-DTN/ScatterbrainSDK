@@ -97,13 +97,6 @@ repositories {
     gradlePluginPortal()
 }
 
-tasks.withType(KotlinCompile).configureEach {
-    compilerOptions.freeCompilerArgs.addAll(
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=/Users/khanson/Documents/repos/scatter/",
-    )
-}
-
 if (rootProject.hasProperty("publishable")) {
     apply from: "../scripts/publish-module.gradle"
 }
