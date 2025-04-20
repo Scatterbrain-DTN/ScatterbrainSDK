@@ -8,6 +8,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'signing'
     id 'kotlin-parcelize'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 apply from: '../scripts/version.gradle'
@@ -87,7 +88,6 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7"
     implementation "androidx.compose.runtime:runtime:1.7.8"
-    ksp "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0"
 }
 
 repositories {
