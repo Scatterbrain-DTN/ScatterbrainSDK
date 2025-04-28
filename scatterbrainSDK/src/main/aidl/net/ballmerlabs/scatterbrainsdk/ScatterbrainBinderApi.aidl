@@ -108,4 +108,7 @@ interface ScatterbrainBinderApi {
     oneway void removeApp(in String id, in UnitCallback callback);
 
     oneway void removeDesktopApp(in byte[] pubkey, in UnitCallback callback);
+
+    oneway void connectMeshtastic(in BoolCallback callback);
+
 }

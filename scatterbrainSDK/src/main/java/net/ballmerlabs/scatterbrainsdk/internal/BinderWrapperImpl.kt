@@ -735,6 +735,28 @@ class BinderWrapperImpl @Inject constructor(
     }
 
 
+    override suspend fun startMeshtastic(): Boolean {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.connectMeshtastic(object: BoolCallback.Stub() {
+                        override fun onError(error: String) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onResult(result: Boolean) {
+                            c.resume(result)
+                        }
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+
     override suspend fun getPermissionStatus(): PermissionStatus {
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
