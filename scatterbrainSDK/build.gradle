@@ -75,19 +75,19 @@ apply from: "../gradle/jacoco.gradle"
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    implementation "androidx.core:core-ktx:1.16.0"
-    implementation 'com.google.dagger:dagger:2.56.2'
-    ksp 'com.google.dagger:dagger-compiler:2.55'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.9.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7"
-    implementation "androidx.compose.runtime:runtime:1.8.2"
+    implementation libs.appcompat
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+    implementation libs.core.ktx
+    implementation libs.dagger
+    ksp libs.dagger.compiler
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.kotlin.stdlib.jdk7
+    implementation libs.kotlin.stdlib
+    implementation libs.jetbrains.kotlinx.coroutines.core
+    implementation libs.kotlinx.collections.immutable.v037
+    implementation libs.androidx.runtime
 }
 
 repositories {
