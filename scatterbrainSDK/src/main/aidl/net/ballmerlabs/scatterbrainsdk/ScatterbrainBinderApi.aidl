@@ -111,4 +111,6 @@ interface ScatterbrainBinderApi {
 
     oneway void connectMeshtastic(in BoolCallback callback);
 
+    oneway void meshtasticSync(in UnitCallback callback);
+
 }

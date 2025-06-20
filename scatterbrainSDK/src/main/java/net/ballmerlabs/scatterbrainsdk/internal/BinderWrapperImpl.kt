@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.ParcelUuid
+import android.os.RemoteException
 import android.util.Log
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
@@ -727,6 +728,29 @@ class BinderWrapperImpl @Inject constructor(
                             }
 
                         })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+
+    override suspend fun syncMeshtastic() {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.meshtasticSync(object : UnitCallback.Stub() {
+                        override fun onError(error: String) {
+                            c.resumeWithException(RemoteException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
+                        }
+
+                    })
                 } catch (exc: Exception) {
                     c.resumeWithException(exc)
                 }

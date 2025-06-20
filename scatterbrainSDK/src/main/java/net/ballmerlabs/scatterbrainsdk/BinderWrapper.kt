@@ -377,6 +377,8 @@ interface BinderWrapper {
 
     suspend fun startMeshtastic(): Boolean
 
+    suspend fun syncMeshtastic()
+
     fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
 
     val coroutineScope: CoroutineScope
