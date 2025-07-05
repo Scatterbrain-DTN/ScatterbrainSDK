@@ -41,6 +41,7 @@ private fun readByteArray(parcel: Parcel): ByteArray {
  * @property receiveDate timestamp when this message was received by Scatterbrain
  * @property isFile if this message contains a file descriptor, if false message contains inline bytes
  * @property id a unique id referring to this message, valid within the local router only
+ * @property forwardMeshtastic Allow forwarding this message to meshtastic routers, if small
  */
 data class ScatterMessage(
         val shm: ShmCompat?,
@@ -54,7 +55,8 @@ data class ScatterMessage(
         val receiveDate: Date,
         val fileDescriptor: ParcelFileDescriptor?,
         val isFile: Boolean,
-        val id: ParcelUuid
+        val id: ParcelUuid,
+        val forwardMeshtastic: ForwardMeshtastic? = null
 ): Parcelable {
 
     val body by lazy {
