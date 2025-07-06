@@ -189,6 +189,15 @@ data class ScatterMessage(
             check(!fileNotFound) { "file not found" }
         }
 
+
+        fun receiveDate(date: Date) = apply {
+            this.receiveDate = date
+        }
+
+        fun sendDate(date: Date) = apply {
+            this.sendDate = date
+        }
+
         /**
          * Builds a ScatterMessage instance
          * @return ScatterMessage object
