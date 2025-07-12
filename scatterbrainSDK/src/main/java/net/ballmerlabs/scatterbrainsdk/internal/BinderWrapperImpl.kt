@@ -423,6 +423,7 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+    @ExperimentalCoroutinesApi
     override fun observeMessages(application: String, limit: Int): LiveData<List<ScatterMessage>> {
         return liveData {
             defaultScope.launch(Dispatchers.IO) {
