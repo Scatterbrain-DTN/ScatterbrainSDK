@@ -86,7 +86,7 @@ dependencies {
     implementation libs.kotlin.stdlib.jdk7
     implementation libs.kotlin.stdlib
     implementation libs.jetbrains.kotlinx.coroutines.core
-    implementation libs.kotlinx.collections.immutable.v037
+    implementation libs.kotlinx.collections.immutable
     implementation libs.androidx.runtime
 }
 
