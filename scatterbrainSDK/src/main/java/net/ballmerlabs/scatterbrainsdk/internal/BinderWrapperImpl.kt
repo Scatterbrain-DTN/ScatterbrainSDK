@@ -7,16 +7,12 @@ import android.net.Uri
 import android.os.ParcelUuid
 import android.os.RemoteException
 import android.util.Log
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -72,8 +68,8 @@ class BinderWrapperImpl @Inject constructor(
     @Named(SCOPE_DEFAULT) private val defaultScope: CoroutineScope,
 ) : BinderWrapper {
 
-    private val hander: Handlers = Handlers().apply {
-        handlers[this] = true
+    private val handlers: Handlers = Handlers().apply {
+        net.ballmerlabs.scatterbrainsdk.internal.handlers[this] = true
     }
 
 
@@ -94,7 +90,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>> {
-        return hander.handshakeResult.switchMap { v -> liveData {
+        return handlers.handshakeResult.switchMap { v -> liveData {
                 defaultScope.launch {
                     try {
                         val id = getIdentities().toImmutableList()
@@ -163,11 +159,11 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override fun observeRouterState(): LiveData<RouterState> {
-        return hander.routerState
+        return handlers.routerState
     }
 
     override fun observeLuid(): LiveData<ParcelUuid> {
-        return hander.luidState
+        return handlers.luidState
     }
 
     override suspend fun isDiscovering(): Boolean = withContext(Dispatchers.IO) {
@@ -176,7 +172,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override fun observeMetrics(): LiveData<HandshakeResult> {
-        return hander.handshakeResult
+        return handlers.handshakeResult
     }
 
     override suspend fun verify(identity: Identity, data: ByteArray, sig: ByteArray): Boolean {
@@ -295,10 +291,10 @@ class BinderWrapperImpl @Inject constructor(
                 trySendBlocking(getIdentities())
             }
         }
-        hander.addOnReceiveCallback(callback)
+        handlers.addOnReceiveCallback(callback)
 
         awaitClose {
-            hander.removeOnReceiveCallback(callback)
+            handlers.removeOnReceiveCallback(callback)
         }
     }
 
@@ -428,7 +424,7 @@ class BinderWrapperImpl @Inject constructor(
         return liveData {
             defaultScope.launch(Dispatchers.IO) {
                 try {
-                    val ld = hander.handshakeResult.switchMap { v ->
+                    val ld = handlers.handshakeResult.switchMap { v ->
                         liveData {
                             withContext(Dispatchers.IO) {
                                 if (v.messages > 0) {
@@ -569,7 +565,7 @@ class BinderWrapperImpl @Inject constructor(
                         }
 
                         override fun onResult(identity: HandshakeResult) {
-                            hander.handshakeResult.postValue(identity)
+                            handlers.handshakeResult.postValue(identity)
                             c.resume(identity)
                         }
                     })
@@ -960,7 +956,7 @@ class BinderWrapperImpl @Inject constructor(
     }
 
     override fun observePairingAttempts(): LiveData<PairingState> {
-        return hander.desktopPairing
+        return handlers.desktopPairing
     }
 
     override fun observeBinderState(): LiveData<BinderWrapper.Companion.BinderState> {
@@ -969,7 +965,7 @@ class BinderWrapperImpl @Inject constructor(
 
     protected fun finalize() {
         try {
-            handlers.remove(this.hander)
+            net.ballmerlabs.scatterbrainsdk.internal.handlers.remove(this.handlers)
         } catch(exc: ConcurrentModificationException) {
             Log.w(TAG, "failed to remove handler: $exc")
         }
