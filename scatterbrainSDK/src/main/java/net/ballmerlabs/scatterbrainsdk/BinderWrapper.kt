@@ -379,6 +379,10 @@ interface BinderWrapper {
 
     suspend fun syncMeshtastic()
 
+    suspend fun purgeIdentities(purge: Boolean)
+
+    suspend fun purgeMessages(start: Date, end: Date)
+
     fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
 
     val coroutineScope: CoroutineScope

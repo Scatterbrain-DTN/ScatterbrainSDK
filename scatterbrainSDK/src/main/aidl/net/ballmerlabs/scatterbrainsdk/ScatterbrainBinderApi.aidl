@@ -113,4 +113,8 @@ interface ScatterbrainBinderApi {
 
     oneway void meshtasticSync(in UnitCallback callback);
 
+    oneway void purge(long startDate, long endDate, in UnitCallback callback);
+
+    oneway void purgeIdentities(boolean purge, in UnitCallback callback);
+
 }

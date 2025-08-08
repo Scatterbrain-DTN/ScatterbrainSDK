@@ -298,6 +298,50 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
+    override suspend fun purgeIdentities(purge: Boolean) {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.purgeIdentities(purge, object: UnitCallback.Stub() {
+                        override fun onError(error: String?) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
+                        }
+
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+    override suspend fun purgeMessages(start: Date, end: Date) {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.purge(start.time, end.time, object: UnitCallback.Stub() {
+                        override fun onError(error: String?) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
+                        }
+
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
     override suspend fun getScatterMessages(application: String, limit: Int): Flow<ScatterMessage> {
         return callbackFlow {
             defaultScope.launch(Dispatchers.IO) {
