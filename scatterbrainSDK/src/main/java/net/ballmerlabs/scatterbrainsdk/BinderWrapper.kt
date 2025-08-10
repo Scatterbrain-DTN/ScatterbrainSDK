@@ -126,7 +126,7 @@ interface BinderWrapper {
      * @return list of ACLs
      */
     @Throws(UnauthorizedException::class)
-    suspend fun getPermissions(identity: Identity): List<NamePackage>
+    suspend fun getPermissions(identity: UUID): List<NamePackage>
 
     /**
      * Adds an ACL to an identity authorizing an app to use it.
@@ -136,7 +136,7 @@ interface BinderWrapper {
      * @param packageName android app package name
      */
     @Throws(UnauthorizedException::class)
-    suspend fun authorizeIdentity(identity: Identity, packageName: String)
+    suspend fun authorizeIdentity(identity: UUID, packageName: String)
 
     /**
      * Removes an ACL authorizing an app to use an identity.
@@ -146,7 +146,7 @@ interface BinderWrapper {
      * @param packageName android app package name
      */
     @Throws(UnauthorizedException::class)
-    suspend fun deauthorizeIdentity(identity: Identity, packageName: String)
+    suspend fun deauthorizeIdentity(identity: UUID, packageName: String)
 
     /**
      * Deletes an identity.
@@ -156,7 +156,7 @@ interface BinderWrapper {
      * @return true if identity removed
      */
     @Throws(UnauthorizedException::class)
-    suspend fun removeIdentity(identity: Identity): Boolean
+    suspend fun removeIdentity(identity: UUID): Boolean
 
     /**
      * Cryptographically signs data using a stored identity.
@@ -166,7 +166,7 @@ interface BinderWrapper {
      * @return detached ed25519 signature
      */
     @Throws(UnauthorizedException::class)
-    suspend fun sign(identity: Identity, data: ByteArray): ByteArray
+    suspend fun sign(identity: UUID, data: ByteArray): ByteArray
 
     /**
      * Cryptographically verifies a detached signature using a stored identity
@@ -177,7 +177,7 @@ interface BinderWrapper {
      * @return true if valid, false if invalid
      */
     @Throws(UnauthorizedException::class)
-    suspend fun verify(identity: Identity, data: ByteArray, sig: ByteArray): Boolean
+    suspend fun verify(identity: UUID, data: ByteArray, sig: ByteArray): Boolean
 
     /**
      * Starts active discovery using default transport modules

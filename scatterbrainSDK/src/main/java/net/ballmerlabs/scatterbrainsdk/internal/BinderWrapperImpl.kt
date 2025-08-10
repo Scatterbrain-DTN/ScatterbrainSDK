@@ -94,6 +94,7 @@ class BinderWrapperImpl @Inject constructor(
                 defaultScope.launch {
                     try {
                         val id = getIdentities().toImmutableList()
+                        Log.v("debug", "got identities ${id.size} ${id.filter { v -> v.frozen }.size }}")
                         emit(id)
                     } catch (exc: Exception) {
                         Log.v("debug", "failed to getIdentities: $exc")
@@ -127,7 +128,7 @@ class BinderWrapperImpl @Inject constructor(
 
 
 
-    override suspend fun sign(identity: Identity, data: ByteArray): ByteArray {
+    override suspend fun sign(identity: UUID, data: ByteArray): ByteArray {
 
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
@@ -135,7 +136,7 @@ class BinderWrapperImpl @Inject constructor(
                     val binder = binderProvider.getAsync()
                     binder.signDataDetachedAsync(
                         data,
-                        ParcelUuid(identity.fingerprint),
+                        ParcelUuid(identity),
                         object : ByteArrayCallback.Stub() {
                             override fun onError(error: String) {
                                 c.resumeWithException(IllegalStateException(error))
@@ -171,7 +172,7 @@ class BinderWrapperImpl @Inject constructor(
         return handlers.handshakeResult
     }
 
-    override suspend fun verify(identity: Identity, data: ByteArray, sig: ByteArray): Boolean {
+    override suspend fun verify(identity: UUID, data: ByteArray, sig: ByteArray): Boolean {
 
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
@@ -181,7 +182,7 @@ class BinderWrapperImpl @Inject constructor(
                     binder.verifyDataAsync(
                         data,
                         sig,
-                        ParcelUuid(identity.fingerprint),
+                        ParcelUuid(identity),
                         object : BoolCallback.Stub() {
                             override fun onError(error: String) {
                                 c.resumeWithException(IllegalStateException(error))
@@ -529,13 +530,13 @@ class BinderWrapperImpl @Inject constructor(
         }.firstOrNull()!!
     }
 
-    override suspend fun authorizeIdentity(identity: Identity, packageName: String) {
+    override suspend fun authorizeIdentity(identity: UUID, packageName: String) {
         return suspendCancellableCoroutine { c ->
             defaultScope.launch {
                 val binder = binderProvider.getAsync()
                 try {
                     binder.authorizeApp(
-                        ParcelUuid(identity.fingerprint),
+                        ParcelUuid(identity),
                         packageName,
                         object : UnitCallback.Stub() {
                             override fun onError(error: String) {
@@ -543,7 +544,6 @@ class BinderWrapperImpl @Inject constructor(
                             }
 
                             override fun onComplete() {
-                                Log.v("debug", "authorizeIdentity ${identity.name} $packageName")
                                 c.resume(Unit)
                             }
 
@@ -556,19 +556,19 @@ class BinderWrapperImpl @Inject constructor(
         }
     }
 
-    override suspend fun deauthorizeIdentity(identity: Identity, packageName: String) =
+    override suspend fun deauthorizeIdentity(identity: UUID, packageName: String) =
         withContext(Dispatchers.IO) {
             Log.v(TAG, "deauthorizing $packageName")
-            binderProvider.getAsync().deauthorizeApp(ParcelUuid(identity.fingerprint), packageName)
+            binderProvider.getAsync().deauthorizeApp(ParcelUuid(identity), packageName)
         }
 
-    override suspend fun getPermissions(identity: Identity): List<NamePackage> {
+    override suspend fun getPermissions(identity: UUID): List<NamePackage> {
         val binder = binderProvider.getAsync()
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
                 try {
                     binder.getAppPermissions(
-                        ParcelUuid(identity.fingerprint),
+                        ParcelUuid(identity),
                         object : StringCallback.Stub() {
                             override fun onError(error: String) {
                                 c.resumeWithException(IllegalStateException(error))
@@ -770,13 +770,13 @@ class BinderWrapperImpl @Inject constructor(
         return sendMessage(messages, identity.fingerprint)
     }
 
-    override suspend fun removeIdentity(identity: Identity): Boolean {
+    override suspend fun removeIdentity(identity: UUID): Boolean {
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
                 val binder = binderProvider.getAsync()
                 try {
                     binder.removeIdentity(
-                        ParcelUuid(identity.fingerprint),
+                        ParcelUuid(identity),
                         object : BoolCallback.Stub() {
                             override fun onError(error: String) {
                                 c.resumeWithException(IllegalStateException(error))
