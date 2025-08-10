@@ -3,20 +3,23 @@ package net.ballmerlabs.scatterbrainsdk
 import android.os.Parcel
 import android.os.ParcelUuid
 import android.os.Parcelable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import net.ballmerlabs.scatterbrainsdk.internal.b64
+import net.ballmerlabs.scatterbrainsdk.internal.readBool
 import net.ballmerlabs.scatterbrainsdk.internal.readParcelableMap
+import net.ballmerlabs.scatterbrainsdk.internal.writeBool
 import net.ballmerlabs.scatterbrainsdk.internal.writeParcelableMap
-import java.util.*
+import java.util.AbstractMap
+import java.util.UUID
 
 fun parcelArray(parcel: Parcel): ByteArray {
     val s = ByteArray(parcel.readInt())
     parcel.readByteArray(s)
     return s
 }
+
 const val PROTOBUF_PRIVKEY_KEY = "scatterbrain"
 
 /**
@@ -45,9 +48,11 @@ data class Identity(
     @Stable
     val fingerprint: UUID,
     @Stable
-    val isOwned: Boolean
-): Parcelable {
-     constructor(inParcel: Parcel): this(
+    val isOwned: Boolean,
+    @Stable
+    val frozen: Boolean,
+) : Parcelable {
+    constructor(inParcel: Parcel) : this(
         extraKeys = readParcelableMap(inParcel) { parcel ->
             val len = parcel.readInt()
             val key = ByteArray(len)
@@ -57,7 +62,8 @@ data class Identity(
         name = inParcel.readString()!!,
         sig = parcelArray(inParcel),
         fingerprint = inParcel.readParcelable<ParcelUuid>(ParcelUuid::class.java.classLoader)!!.uuid!!,
-        isOwned = hasKey(inParcel.readByte().toInt())
+        isOwned = hasKey(inParcel.readByte().toInt()),
+        frozen = inParcel.readBool()
     )
 
     @Stable
@@ -77,6 +83,7 @@ data class Identity(
         parcel.writeByteArray(sig)
         parcel.writeParcelable(ParcelUuid(fingerprint), i)
         parcel.writeByte(hasKey(isOwned))
+        parcel.writeBool(frozen)
     }
 
     @Stable
@@ -86,7 +93,7 @@ data class Identity(
                 "pubkey=${this.publicKey.b64()}\n" +
                 "name=${this.name}\n" +
                 "isOwned=${this.isOwned}\n" +
-                "fingerprint=${this.fingerprint.toString()}"
+                "fingerprint=${this.fingerprint}"
 
         for ((k, v) in extraKeys) {
             id += "     ($k, ${v.b64()})\n"
@@ -99,9 +106,11 @@ data class Identity(
 
         other as Identity
 
-        if (extraKeys.keys.any { k -> !other.extraKeys.containsKey(k) || !other.extraKeys[k].contentEquals(
-                extraKeys[k]
-            ) }) return false
+        if (extraKeys.keys.any { k ->
+                !other.extraKeys.containsKey(k) || !other.extraKeys[k].contentEquals(
+                    extraKeys[k]
+                )
+            }) return false
 
         if (!publicKey.contentEquals(other.publicKey)) return false
         if (name != other.name) return false
@@ -125,6 +134,7 @@ data class Identity(
         result = 31 * result + isOwned.hashCode()
         return result
     }
+
     companion object {
         @JvmField
         val CREATOR: Parcelable.Creator<Identity> = object : Parcelable.Creator<Identity> {

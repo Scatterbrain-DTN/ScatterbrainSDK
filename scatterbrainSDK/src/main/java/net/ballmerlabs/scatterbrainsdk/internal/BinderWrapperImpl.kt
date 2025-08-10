@@ -94,10 +94,6 @@ class BinderWrapperImpl @Inject constructor(
                 defaultScope.launch {
                     try {
                         val id = getIdentities().toImmutableList()
-                        Log.v("debug", "got identities ${id.size}")
-                        for (i in id) {
-                            Log.v("debug", id.toString())
-                        }
                         emit(id)
                     } catch (exc: Exception) {
                         Log.v("debug", "failed to getIdentities: $exc")
@@ -304,6 +300,28 @@ class BinderWrapperImpl @Inject constructor(
                 val binder = binderProvider.getAsync()
                 try {
                     binder.purgeIdentities(purge, object: UnitCallback.Stub() {
+                        override fun onError(error: String?) {
+                            c.resumeWithException(IllegalStateException(error))
+                        }
+
+                        override fun onComplete() {
+                            c.resume(Unit)
+                        }
+
+                    })
+                } catch (exc: Exception) {
+                    c.resumeWithException(exc)
+                }
+            }
+        }
+    }
+
+    override suspend fun purgeIdentity(fingerprint: UUID, purge: Boolean) {
+        return suspendCancellableCoroutine { c ->
+            defaultScope.launch(Dispatchers.IO) {
+                val binder = binderProvider.getAsync()
+                try {
+                    binder.purgeIdentity(ParcelUuid(fingerprint), purge, object: UnitCallback.Stub() {
                         override fun onError(error: String?) {
                             c.resumeWithException(IllegalStateException(error))
                         }

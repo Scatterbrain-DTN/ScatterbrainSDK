@@ -117,4 +117,6 @@ interface ScatterbrainBinderApi {
 
     oneway void purgeIdentities(boolean purge, in UnitCallback callback);
 
+    oneway void purgeIdentity(in ParcelUuid identity, boolean purge, in UnitCallback callback);
+
 }

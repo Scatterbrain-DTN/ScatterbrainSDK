@@ -381,6 +381,8 @@ interface BinderWrapper {
 
     suspend fun purgeIdentities(purge: Boolean)
 
+    suspend fun purgeIdentity(fingerprint: UUID, purge: Boolean)
+
     suspend fun purgeMessages(start: Date, end: Date)
 
     fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
