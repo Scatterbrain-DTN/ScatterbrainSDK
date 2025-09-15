@@ -1,7 +1,7 @@
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.9"
+    toolVersion = "0.8.13"
 }
 
 private static boolean isAndroidModule(Project project) {
@@ -25,7 +25,11 @@ def setupAndroidReporting() {
     tasks.withType(Test).configureEach {
         // Whether or not classes without source location should be instrumented
         jacoco.includeNoLocationClasses true
-        jacoco.excludes = ['jdk.internal.*']
+        jacoco.excludes = [
+                'androidx.core.*',
+                'com.android.*',
+                'android.*'
+        ]
     }
     task jacocoTestReport(
             type: JacocoReport,

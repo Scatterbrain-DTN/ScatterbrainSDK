@@ -75,6 +75,11 @@ android {
     buildFeatures {
         aidl true
     }
+
+    packagingOptions {
+        exclude 'lib/x86/libsqlite3x.so'
+        exclude 'lib/armeabi-v7a/libsqlite3x.so'
+    }
 }
 
 apply from: "../gradle/jacoco.gradle"
