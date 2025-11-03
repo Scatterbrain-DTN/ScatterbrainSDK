@@ -385,6 +385,8 @@ interface BinderWrapper {
 
     suspend fun purgeMessages(start: Date, end: Date)
 
+    suspend fun merkleRebuild()
+
     fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>>
 
     val coroutineScope: CoroutineScope

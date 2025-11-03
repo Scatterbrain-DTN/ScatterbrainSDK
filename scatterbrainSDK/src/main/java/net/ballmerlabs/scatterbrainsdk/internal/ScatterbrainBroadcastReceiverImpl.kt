@@ -65,7 +65,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor() : BroadcastReceive
     lateinit var coroutineScope: CoroutineScope
 
     override fun onReceive(ctx: Context, intent: Intent) {
-        Log.v(TAG, "onReceive")
         try {
             handlers.forEach { (handler, _) ->
                 when (intent.action) {
@@ -76,10 +75,6 @@ class ScatterbrainBroadcastReceiverImpl @Inject constructor() : BroadcastReceive
                             )
                         val luid = intent.getParcelableExtra<ParcelUuid>(EXTRA_LUID)
                         if (handshakeResult != null) {
-                            Log.v(
-                                "debug",
-                                "handshakeResult ${handshakeResult.metrics.size}"
-                            )
                             handler.handshakeResult.postValue(handshakeResult!!)
                         }
                         if (luid != null) {
