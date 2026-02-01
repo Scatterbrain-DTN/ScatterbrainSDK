@@ -28,8 +28,11 @@ def setupAndroidReporting() {
         jacoco.excludes = [
                 'androidx.core.*',
                 'com.android.*',
-                'android.*'
+                'android.*',
+                'jdk.internal.*'
         ]
+        unitTests.returnDefaultValues = true
+
     }
     task jacocoTestReport(
             type: JacocoReport,
