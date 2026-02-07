@@ -31,7 +31,7 @@ def setupAndroidReporting() {
                 'android.*',
                 'jdk.internal.*'
         ]
-        unitTests.returnDefaultValues = true
+        //unitTests.returnDefaultValues = true
 
     }
     task jacocoTestReport(
