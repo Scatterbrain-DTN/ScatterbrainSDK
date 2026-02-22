@@ -91,7 +91,7 @@ class BinderWrapperImpl @Inject constructor(
 
     override fun observeIdentitiesLiveData(): LiveData<ImmutableList<Identity>> {
         return handlers.handshakeResult.switchMap { v -> liveData {
-                defaultScope.launch {
+                defaultScope.launch(Dispatchers.IO) {
                     try {
                         val id = getIdentities().toImmutableList()
                         Log.v("debug", "got identities ${id.size} ${id.filter { v -> v.frozen }.size }}")
