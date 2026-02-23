@@ -16,6 +16,7 @@ buildscript {
 
     }
 }
+
 plugins {
     id 'com.google.devtools.ksp' version '2.1.20-1.0.31' apply false
     id 'org.jetbrains.kotlin.plugin.compose' version "2.1.20" apply false // this version matches your Kotlin version
@@ -29,3 +30,12 @@ apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 apply plugin: 'io.github.gradle-nexus.publish-plugin'
+
+
+nexusPublishing {
+    repositories {
+        ivyRepository {
+            publicationType = io.github.gradlenexus.publishplugin.NexusRepository.PublicationType.IVY
+        }
+    }
+}
