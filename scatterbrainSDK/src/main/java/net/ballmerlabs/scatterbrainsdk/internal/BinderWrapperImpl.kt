@@ -3,6 +3,7 @@ package net.ballmerlabs.scatterbrainsdk.internal
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Mesh
 import android.net.Uri
 import android.os.ParcelUuid
 import android.os.RemoteException
@@ -40,6 +41,8 @@ import net.ballmerlabs.scatterbrainsdk.HandshakeCallback
 import net.ballmerlabs.scatterbrainsdk.HandshakeResult
 import net.ballmerlabs.scatterbrainsdk.Identity
 import net.ballmerlabs.scatterbrainsdk.IdentityCallback
+import net.ballmerlabs.scatterbrainsdk.MeshtasticConnectionConfig
+import net.ballmerlabs.scatterbrainsdk.MeshtasticMode
 import net.ballmerlabs.scatterbrainsdk.NamePackage
 import net.ballmerlabs.scatterbrainsdk.PairingState
 import net.ballmerlabs.scatterbrainsdk.PermissionCallback
@@ -841,12 +844,12 @@ class BinderWrapperImpl @Inject constructor(
     }
 
 
-    override suspend fun startMeshtastic(): Boolean {
+    override suspend fun startMeshtastic(config: MeshtasticConnectionConfig): Boolean {
         return suspendCancellableCoroutine { c ->
             defaultScope.launch(Dispatchers.IO) {
                 val binder = binderProvider.getAsync()
                 try {
-                    binder.connectMeshtastic(object: BoolCallback.Stub() {
+                    binder.connectMeshtastic(config, object: BoolCallback.Stub() {
                         override fun onError(error: String) {
                             c.resumeWithException(IllegalStateException(error))
                         }

@@ -372,7 +372,7 @@ interface BinderWrapper {
 
     suspend fun getApps(): Apps
 
-    suspend fun startMeshtastic(): Boolean
+    suspend fun startMeshtastic(config: MeshtasticConnectionConfig): Boolean
 
     suspend fun syncMeshtastic()
 

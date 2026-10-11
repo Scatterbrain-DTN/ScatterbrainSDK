@@ -11,6 +11,7 @@ import net.ballmerlabs.scatterbrainsdk.BoolCallback;
 import net.ballmerlabs.scatterbrainsdk.PermissionCallback;
 import net.ballmerlabs.scatterbrainsdk.HandshakeCallback;
 import net.ballmerlabs.scatterbrainsdk.SbAppCallback;
+import net.ballmerlabs.scatterbrainsdk.MeshtasticConnectionConfig;
 
 interface ScatterbrainBinderApi {
 
@@ -109,7 +110,7 @@ interface ScatterbrainBinderApi {
 
     oneway void removeDesktopApp(in byte[] pubkey, in UnitCallback callback);
 
-    oneway void connectMeshtastic(in BoolCallback callback);
+    oneway void connectMeshtastic(in MeshtasticConnectionConfig config, in BoolCallback callback);
 
     oneway void meshtasticSync(in UnitCallback callback);
 
