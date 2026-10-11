@@ -8,15 +8,11 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.ParcelUuid
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import net.ballmerlabs.scatterbrainsdk.HandshakeResult
 import net.ballmerlabs.scatterbrainsdk.PairingState
 import net.ballmerlabs.scatterbrainsdk.RouterState
-import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.Companion.BROADCAST_EVENT
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.Companion.EXTRA_LUID
 import net.ballmerlabs.scatterbrainsdk.ScatterbrainApi.Companion.EXTRA_ROUTER_STATE

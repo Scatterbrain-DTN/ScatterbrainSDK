@@ -2,16 +2,21 @@ package net.ballmerlabs.scatterbrainsdk
 
 import android.content.Context
 import android.net.Uri
-import android.os.*
+import android.os.BadParcelableException
+import android.os.Build
+import android.os.Parcel
+import android.os.ParcelFileDescriptor
+import android.os.ParcelUuid
+import android.os.Parcelable
 import android.util.Log
 import android.webkit.MimeTypeMap
-import net.ballmerlabs.scatterbrainsdk.ScatterMessage.Builder
 import net.ballmerlabs.scatterbrainsdk.internal.readBool
 import net.ballmerlabs.scatterbrainsdk.internal.writeBool
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileNotFoundException
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 private fun validateBody(size: Int): Int {
     if (size > ScatterbrainApi.MAX_BODY_SIZE) {

@@ -6,7 +6,6 @@ import android.os.ParcelFileDescriptor
 import android.os.Parcelable
 import android.os.SharedMemory
 import java.io.File
-import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
