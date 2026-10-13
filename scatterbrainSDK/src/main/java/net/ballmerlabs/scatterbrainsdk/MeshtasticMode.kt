@@ -1,5 +1,7 @@
 package net.ballmerlabs.scatterbrainsdk
-enum class MeshtasticMode {
-    TCP,
-    BLUETOOTH
+enum class MeshtasticMode(val id: Int) {
+    TCP(0),
+    BLUETOOTH(1)
 }
+
+
